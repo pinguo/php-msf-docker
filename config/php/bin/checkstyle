@@ -1,0 +1,270 @@
+#!/usr/bin/env php
+<?php
+
+class CheckStyle
+{
+    /**
+     * An array of all values specified on the command line.
+     *
+     * @var Array
+     */
+    protected $values = array();
+    
+    /**
+     * An array of the current command line arguments we are processing.
+     *
+     * @var array
+     */
+    private $_cliArgs = array();
+    
+    /**
+     * Run the script.
+     */
+    public function run() {
+        $this->getCommandLineValues();
+
+        if ($this->values['app'] !== null) {
+            $configPath = $this->values['app'] . '/' . $this->values['target'] . '/config/check.php';
+            if (is_readable($configPath)) {
+                $config = require($configPath);
+                if (!empty($config['exclude'])) {
+                    $exclude = array();
+                    foreach ($config['exclude'] as $v) {
+                        if (strlen($v) > 4 && substr($v, -4) == '.php') {
+                            $exclude[] = $v;
+                        } else {
+                            $exclude[] = $this->values['app'] . '/' . $this->values['target'] . '/'  . trim(trim($v), '/');
+                        }
+                    }
+                    !empty($this->values['exclude']) && $exclude = array_merge($exclude, explode(',', $this->values['exclude']));
+                    $exclude = array_unique($exclude);
+                    $this->values['exclude'] = implode(',', $exclude);
+                }
+                if ($this->values['outdir'] === null && !empty($config['outdir'])) {
+                    $this->values['outdir'] = $config['outdir'];
+                }
+                $this->values['files'][] = realpath($this->values['app'] . '/' . $this->values['target']);
+            }
+        }
+        if (!$this->values['fix']) {
+            $cmd = 'phpcs --standard=PGSR --extensions=php --encoding=utf-8 --report-width=120 -s --report-full --report-summary';
+        } else {
+            $cmd = "phpcbf --standard=PGSR --extensions=php --encoding=utf-8";
+        }
+        if (!empty($this->values['outdir'])) {
+            if (!is_dir($this->values['outdir'])) {
+                mkdir($this->values['outdir'], 777, true);
+            }
+            $cmd .= ' --report-checkstyle=' . $this->values['outdir'] . '/style-report.xml';
+        }
+        if (!empty($this->values['exclude'])) {
+            $cmd .= ' --ignore=' . $this->values['exclude'];
+        }
+        $this->values['files'] = array_unique($this->values['files']);
+        if (empty($this->values['files'])) {
+            echo "The file list is empty\n";
+            exit(0);
+        }
+        $cmd .= ' ' . implode(' ', $this->values['files']);
+        exec($cmd, $output, $returnVar);
+        if (!empty($output)) {
+            foreach ($output as $line) {
+                echo $line . "\n";
+            }
+        }
+        if ($returnVar === 0) {
+            echo "Check pass\n";
+        } else {
+            echo "Check fail\n";
+        }
+        exit($returnVar);
+    }
+    
+    /**
+     * Gets the processed command line values.
+     *
+     * If the values have not yet been set, the values will be sourced
+     * from the command line arguments.
+     *
+     * @return array
+     */
+    public function getCommandLineValues()
+    {
+        if (!empty($this->values)) {
+            return $this->values;
+        }
+        
+        $args = $_SERVER['argv'];
+        array_shift($args);
+        $this->setCommandLineValues($args);
+        
+        return $this->values;
+    }
+    
+    /**
+     * Set the command line values.
+     *
+     * @param array $args An array of command line arguments to process.
+     *
+     * @return void
+     */
+    public function setCommandLineValues($args)
+    {
+        if (empty($this->values)) {
+            $this->values = $this->getDefaults();
+        }
+    
+        $this->_cliArgs = $args;
+        $numArgs = count($args);
+    
+        for ($i = 0; $i < $numArgs; $i++) {
+            $arg = trim($this->_cliArgs[$i]);
+            if ($arg === '') {
+                continue;
+            }
+    
+            if ($arg{0} === '-') {
+                if ($arg === '-' || $arg === '--') {
+                    // Empty argument, ignore it.
+                    continue;
+                }
+    
+                if ($arg{1} === '-') {
+                    $this->processLongArgument(substr($arg, 2), $i);
+                } else {
+                    $switches = str_split($arg);
+                    foreach ($switches as $switch) {
+                        if ($switch === '-') {
+                            continue;
+                        }
+                        $this->processShortArgument($switch, $i);
+                    }
+                }
+            } else {
+                $this->processUnknownArgument($arg, $i);
+            }
+        }
+    }
+
+    /**
+     * Get a list of default values for all possible command line arguments.
+     *
+     * @return array
+     */
+    public function getDefaults()
+    {
+        // The default values for config settings.
+        $defaults['fix'] = false;
+        $defaults['files'] = array();
+        $defaults['app'] = null;
+        $defaults['exclude'] = null;
+        $defaults['outdir'] = null;
+        $defaults['target'] = 'protected';
+        
+        return $defaults;
+    }
+    
+    /**
+     * Processes a short (-e) command line argument.
+     *
+     * @param string $arg The command line argument.
+     * @param int    $pos The position of the argument on the command line.
+     *
+     * @return void
+     */
+    public function processShortArgument($arg, $pos)
+    {
+        switch ($arg) {
+            case 'h':
+            case '?':
+                $this->printUsage();
+                exit(0);
+                break;
+            case 'f' :
+                $this->values['fix'] = true;
+                break;
+            default:
+                $this->processUnknownArgument('-' . $arg, $pos);
+        }
+    }
+    
+    /**
+     * Processes a long (--example) command line argument.
+     *
+     * @param string $arg The command line argument.
+     * @param int    $pos The position of the argument on the command line.
+     *
+     * @return void
+     */
+    public function processLongArgument($arg, $pos)
+    {
+        if ($arg === 'help') {
+            $this->printUsage();
+            exit(0);
+        }
+        if (substr($arg, 0, 4) === 'app=') {
+            $app = rtrim(trim(substr($arg, 4)), '/');
+            if (file_exists($app) === false) {
+                echo 'ERROR: The app "'.$app.'" does not exist.'.PHP_EOL.PHP_EOL;
+                $this->printUsage();
+                exit(2);
+            }
+            $this->values['app'] = rtrim(exec('readlink -f ' . $app), '/');
+        } elseif (substr($arg, 0, 8) === 'exclude=') {
+            $this->values['exclude'] = trim(substr($arg, 8));
+        } elseif (substr($arg, 0, 7) === 'outdir=') {
+            $this->values['outdir'] = trim(substr($arg, 7));
+        } elseif (substr($arg, 0, 7) === 'target=') {
+            $this->values['target'] = trim(trim(substr($arg, 7)), '/');
+        }
+    }
+    
+    /**
+     * Processes an unknown command line argument.
+     *
+     * Assumes all unknown arguments are files and folders to check.
+     *
+     * @param string $arg The command line argument.
+     * @param int    $pos The position of the argument on the command line.
+     *
+     * @return void
+     */
+    public function processUnknownArgument($arg, $pos)
+    {
+        // We don't know about any additional switches; just files.
+        if ($arg{0} === '-') {
+            echo 'ERROR: option "'.$arg.'" not known.'.PHP_EOL.PHP_EOL;
+            $this->printUsage();
+            exit(2);
+        }
+    
+        $file = realpath($arg);
+        if (file_exists($file) === false) {
+            echo 'ERROR: The file "'.$arg.'" does not exist.'.PHP_EOL.PHP_EOL;
+            $this->printUsage();
+            exit(2);
+        } else {
+            $this->values['files'][] = $file;
+        }
+    }
+    
+    /**
+     * Prints out the usage information for this script.
+     *
+     * @return void
+     */
+    public function printUsage()
+    {
+        echo 'Usage: checkstyle [-f] [--app=<app>] [--target=<target>] [--exclude=<patterns>] [--outdir=<outdir>] <file>' . PHP_EOL;
+        echo '        -f            Enable auto fix' . PHP_EOL;
+        echo '        <file>         One or more files and/or directories to check' . PHP_EOL;
+        echo '        <app>         The name of the app, <app>/<target> will be appended in file' . PHP_EOL;
+        echo '                      <app>/<target>/config/check.php will be in use' . PHP_EOL;
+        echo '        <target>      Defaults to "protected"' . PHP_EOL;
+        echo '        <patterns>    A comma separated list of patterns to ignore files and directories' . PHP_EOL;
+        echo '        <outdir>      Report directory' . PHP_EOL;
+    }
+}
+
+$cli = new CheckStyle();
+$cli->run();

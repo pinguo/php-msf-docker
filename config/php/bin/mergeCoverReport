@@ -1,0 +1,236 @@
+#!/usr/bin/env php
+<?php
+
+class MergeCoverReport
+{
+    /**
+     * An array of all values specified on the command line.
+     *
+     * @var Array
+     */
+    protected $values = array();
+    
+    /**
+     * An array of the current command line arguments we are processing.
+     *
+     * @var array
+     */
+    private $_cliArgs = array();
+    
+    /**
+     * Run the script.
+     */
+    public function run() {
+        $this->getCommandLineValues();
+
+        $phpCoverage = new PHP_CodeCoverage();
+        $phpCoverage->setAddUncoveredFilesFromWhitelist(false);
+        foreach ($this->values['coverage-php'] as $f) {
+            $obj = require_once($f);
+            unset($coverage);
+            $phpCoverage->merge($obj);
+        }
+        if (!empty($this->values['coverage-html'])) {
+            $generator = sprintf(' and <a href="http://phpunit.de/">PHPUnit %s</a>', PHPUnit_Runner_Version::id());
+            $writer = new PHP_CodeCoverage_Report_HTML(50, 90, $generator);
+            $ret = $writer->process($phpCoverage, $this->values['coverage-html']);
+        }
+        if (!empty($this->values['coverage-clover'])) {
+            $writer = new PHP_CodeCoverage_Report_Clover();
+            $ret = $writer->process($phpCoverage, $this->values['coverage-clover']);
+        }
+
+        exit(0);
+    }
+    
+    /**
+     * Gets the processed command line values.
+     *
+     * If the values have not yet been set, the values will be sourced
+     * from the command line arguments.
+     *
+     * @return array
+     */
+    public function getCommandLineValues()
+    {
+        if (!empty($this->values)) {
+            return $this->values;
+        }
+        
+        $args = $_SERVER['argv'];
+        array_shift($args);
+        $this->setCommandLineValues($args);
+        
+        return $this->values;
+    }
+    
+    /**
+     * Set the command line values.
+     *
+     * @param array $args An array of command line arguments to process.
+     *
+     * @return void
+     */
+    public function setCommandLineValues($args)
+    {
+        if (empty($this->values)) {
+            $this->values = $this->getDefaults();
+        }
+    
+        $this->_cliArgs = $args;
+        $numArgs = count($args);
+    
+        for ($i = 0; $i < $numArgs; $i++) {
+            $arg = trim($this->_cliArgs[$i]);
+            if ($arg === '') {
+                continue;
+            }
+    
+            if ($arg{0} === '-') {
+                if ($arg === '-' || $arg === '--') {
+                    // Empty argument, ignore it.
+                    continue;
+                }
+    
+                if ($arg{1} === '-') {
+                    $this->processLongArgument(substr($arg, 2), $i);
+                } else {
+                    $switches = str_split($arg);
+                    foreach ($switches as $switch) {
+                        if ($switch === '-') {
+                            continue;
+                        }
+                        $this->processShortArgument($switch, $i);
+                    }
+                }
+            } else {
+                $this->processUnknownArgument($arg, $i);
+            }
+        }
+    }
+
+    /**
+     * Get a list of default values for all possible command line arguments.
+     *
+     * @return array
+     */
+    public function getDefaults()
+    {
+        // The default values for config settings.
+        $defaults['coverage-clover'] = null;
+        $defaults['coverage-html'] = null;
+        $defaults['coverage-php'] = array();
+        
+        return $defaults;
+    }
+    
+    /**
+     * Processes a short (-e) command line argument.
+     *
+     * @param string $arg The command line argument.
+     * @param int    $pos The position of the argument on the command line.
+     *
+     * @return void
+     */
+    public function processShortArgument($arg, $pos)
+    {
+        switch ($arg) {
+            case 'h':
+            case '?':
+                $this->printUsage();
+                exit(0);
+                break;
+            default:
+                $this->processUnknownArgument('-' . $arg, $pos);
+        }
+    }
+    
+    /**
+     * Processes a long (--example) command line argument.
+     *
+     * @param string $arg The command line argument.
+     * @param int    $pos The position of the argument on the command line.
+     *
+     * @return void
+     */
+    public function processLongArgument($arg, $pos)
+    {
+        if ($arg === 'help') {
+            $this->printUsage();
+            exit(0);
+        }
+        if (substr($arg, 0, 16) === 'coverage-clover=') {
+            $this->values['coverage-clover'] = trim(substr($arg, 16));
+        } elseif (substr($arg, 0, 14) === 'coverage-html=') {
+            $this->values['coverage-html'] = trim(substr($arg, 14));
+        }
+    }
+    
+    /**
+     * Processes an unknown command line argument.
+     *
+     * Assumes all unknown arguments are files and folders to check.
+     *
+     * @param string $arg The command line argument.
+     * @param int    $pos The position of the argument on the command line.
+     *
+     * @return void
+     */
+    public function processUnknownArgument($arg, $pos)
+    {
+        // We don't know about any additional switches; just files.
+        if ($arg{0} === '-') {
+            echo 'ERROR: option "'.$arg.'" not known.'.PHP_EOL.PHP_EOL;
+            $this->printUsage();
+            exit(2);
+        }
+    
+        $dir = realpath($arg);
+        if (is_dir($dir) === false) {
+            echo 'ERROR: The dir "'.$arg.'" does not exist.'.PHP_EOL.PHP_EOL;
+            $this->printUsage();
+            exit(2);
+        } else {
+            $handle = opendir($dir);
+            if (!$handle) {
+                echo 'ERROR: Open dir "'.$arg.'" failed.'.PHP_EOL.PHP_EOL;
+                $this->printUsage();
+                exit(2);
+            }
+            $coveragePhp = array();
+            while (($file = readdir($handle)) !== false) {
+                $parts = pathinfo($file);
+                if (isset($parts['extension']) && $parts['extension'] == 'php') {
+                    $coveragePhp[] = $dir . '/' . $file;
+                }
+            }
+            closedir($handle);
+            $this->values['coverage-php'] = $coveragePhp;
+        }
+    }
+    
+    /**
+     * Prints out the usage information for this script.
+     *
+     * @return void
+     */
+    public function printUsage()
+    {
+        echo 'Usage: mergeCoverReport [options] <directory>' . PHP_EOL . PHP_EOL;
+        echo ' Options:' . PHP_EOL . PHP_EOL;
+        echo '  --coverage-clover=<file>  Generate code coverage report in Clover XML format.' . PHP_EOL;
+        echo '  --coverage-html=<dir>     Generate code coverage report in HTML format.' . PHP_EOL . PHP_EOL;
+        echo 'Miscellaneous Options:' . PHP_EOL . PHP_EOL;
+        echo '  -h|--help                 Prints this usage information.' . PHP_EOL;
+    }
+}
+
+$phpunitPath = exec('which phpunit', $output, $ret);
+if ($ret != 0) {
+    echo 'ERROR: phpunit not found.'.PHP_EOL.PHP_EOL;
+    exit($ret);
+}
+require_once($phpunitPath);
+        
+$cli = new MergeCoverReport();
+$cli->run();

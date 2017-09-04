@@ -397,10 +397,13 @@ RUN cd ${SRC_DIR} \
 # Install jq
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 \
-    && mkdir -p /home/worker/bin \
-    && mv jq ${HOME}/bin \
-    && chmod +x ${HOME}/bin/jq
+    && wget -q -O jq-1.5.tar.gz https://github.com/stedolan/jq/archive/jq-1.5.tar.gz \
+    && tar zxf jq-1.5.tar.gz \
+    && cd jq-jq-1.5 \
+    && ./configure --disable-maintainer-mode \
+    && make \
+    && make install \
+    && rm -rf ${SRC_DIR}/jq-*
 
 # -----------------------------------------------------------------------------
 # Update Git
@@ -411,7 +414,7 @@ RUN cd ${SRC_DIR} \
     && tar zxf git-2.14.1.tar.gz \
     && cd git-2.14.1 \
     && make configure \
-    && ./configure --prefix=/usr/local/ --with-curl=${CURL_INSTALL_DIR} \
+    && ./configure --without-iconv --prefix=/usr/local/ --with-curl=${CURL_INSTALL_DIR} \
     && make -j \
     && make install \
     && rm -rf $SRC_DIR/git-2*

@@ -55,7 +55,7 @@ RUN cd ${SRC_DIR} \
 # Devel libraries for delelopment tools like php & nginx ...
 # -----------------------------------------------------------------------------
 RUN yum -y install \
-    tar gzip bzip2 unzip file \
+    tar gzip bzip2 unzip file perl-devel perl-ExtUtils-Embed \
     pcre openssh-server openssh sudo \
     screen vim git telnet expat \
     re2c lemon net-snmp net-snmp-devel \

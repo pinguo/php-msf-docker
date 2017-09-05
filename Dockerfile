@@ -14,8 +14,8 @@ RUN mkdir -p ${SRC_DIR}
 # -----------------------------------------------------------------------------
 RUN yum -y update \
     && yum groupinstall -y "Development tools" \
-    && yum install -y zlib-devel bzip2-devel \
-    openssl-devel ncurses-devel sqlite-devel \
+    && yum install -y zlib-devel bzip2-devel openssl \
+    openssl-devel ncurses-devel sqlite-devel wget \
     && cd ${SRC_DIR} \
     && wget -q -O Python-2.7.13.tgz https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz \
     && tar zxf Python-2.7.13.tgz \
@@ -52,8 +52,8 @@ RUN yum -y update \
 # -----------------------------------------------------------------------------
 RUN yum -y --disablerepo="epel" update nss \
     && yum -y install \
-    tar gzip bzip2 unzip file wget \
-    pcre openssl openssh-server openssh sudo \
+    tar gzip bzip2 unzip file \
+    pcre openssh-server openssh sudo \
     screen vim git telnet expat \
     re2c lemon net-snmp net-snmp-devel \
     ca-certificates perl-CPAN m4 \

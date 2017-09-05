@@ -13,9 +13,9 @@ RUN mkdir -p ${SRC_DIR}
 # Install Development tools
 # -----------------------------------------------------------------------------
 RUN rpm --import /etc/pki/rpm-gpg/RPM* \
-    && yum -y update \
+    yum -y update \
     && yum groupinstall -y "Development tools" \
-    && yum install -y gcc-c++ g++ zlib-devel bzip2-devel openssl \
+    && yum install -y gcc-c++ zlib-devel bzip2-devel openssl \
     openssl-devel ncurses-devel sqlite-devel wget \
     && rm -rf /var/cache/{yum,ldconfig}/* \
     && rm -rf /etc/ld.so.cache \
@@ -28,7 +28,7 @@ RUN cd ${SRC_DIR} \
     && wget -q -O Python-2.7.13.tgz http://mirrors.sohu.com/python/2.7.13/Python-2.7.13.tgz \
     && tar zxf Python-2.7.13.tgz \
     && cd Python-2.7.13 \
-    && ./configure --enable-shared CFLAGS=-fPIC \
+    && ./configure \
     && make \
     && make install \
     && mv /usr/bin/python /usr/bin/python.old \
@@ -144,16 +144,16 @@ RUN cd ${SRC_DIR} \
     && rm -rf ${SRC_DIR}/redis-*
 
 # -----------------------------------------------------------------------------
-# Instll graphviz
+# Install ImageMagick
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O graphviz-2.34.0.tar.gz http://www.graphviz.org/pub/graphviz/stable/SOURCES/graphviz-2.34.0.tar.gz \
-    && tar zxf graphviz-2.34.0.tar.gz \
-    && cd graphviz-2.34.0 \
+    && wget -q -O ImageMagick-7.0.7-0.tar.gz https://www.imagemagick.org/download/ImageMagick-7.0.7-0.tar.gz \
+    && tar zxf ImageMagick-7.0.7-0.tar.gz \
+    && cd ImageMagick-7.0.7-0 \
     && ./configure \
     && make -j \
     && make install \
-    && rm -rf $SRC_DIR/graphviz*
+    && rm -rf $SRC_DIR/ImageMagick*
 
 # -----------------------------------------------------------------------------
 # Install hiredis
@@ -298,7 +298,8 @@ RUN cd ${SRC_DIR} \
     && tar zxf imagick-3.4.3.tgz \
     && cd imagick-3.4.3 \
     && ${PHP_INSTALL_DIR}/bin/phpize \
-    && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config 1>/dev/null \
+    && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config \
+    --with-imagick 1>/dev/null \
     && make clean \
     && make 1>/dev/null \
     && make install \

@@ -152,7 +152,7 @@ RUN cd ${SRC_DIR} \
     && tar zxf ImageMagick-7.0.7-0.tar.gz \
     && cd ImageMagick-7.0.7-0 \
     && ./configure \
-    && make -j \
+    && make \
     && make install \
     && rm -rf $SRC_DIR/ImageMagick*
 
@@ -163,7 +163,7 @@ RUN cd ${SRC_DIR} \
     && wget -q -O hiredis-0.13.3.tar.gz https://github.com/redis/hiredis/archive/v0.13.3.tar.gz \
     && tar zxvf hiredis-0.13.3.tar.gz \
     && cd hiredis-0.13.3 \
-    && make -j \
+    && make \
     && make install \
     && echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf \
     && ldconfig \
@@ -289,7 +289,7 @@ RUN cd ${SRC_DIR} \
     && ${PHP_INSTALL_DIR}/bin/phpize \
     && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config 1>/dev/null \
     && make clean \
-    && make -j \
+    && make \
     && make install \
     && rm -rf ${SRC_DIR}/mongodb-*
 
@@ -466,7 +466,7 @@ RUN cd ${SRC_DIR} \
     && cd git-2.14.1 \
     && make configure \
     && ./configure --without-iconv --prefix=/usr/local/ --with-curl=${CURL_INSTALL_DIR} \
-    && make -j \
+    && make \
     && make install \
     && rm -rf $SRC_DIR/git-2*
 

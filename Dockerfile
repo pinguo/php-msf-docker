@@ -187,11 +187,11 @@ RUN cd ${SRC_DIR} \
 RUN cd ${SRC_DIR} \
     && wget -q -O libmcrypt-2.6.8.tar.gz https://nchc.dl.sourceforge.net/project/mcrypt/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz \
     && tar xzf libmcrypt-2.6.8.tar.gz \
-    && cd libmcrypt-2.6.8 \
+    && cd mcrypt-2.6.8 \
     && ./configure 1>/dev/null \
     && make 1>/dev/null \
     && make install \
-    && rm -rf ${SRC_DIR}/libmcrypt*
+    && rm -rf ${SRC_DIR}/libmcrypt* ${SRC_DIR}/mcrypt*
 
 # -----------------------------------------------------------------------------
 # Install PHP

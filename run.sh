@@ -37,5 +37,5 @@ if [ -f /home/worker/bin/init.sh ]; then
     su worker -c '/home/worker/bin/init.sh'
 fi
 
-echo '/usr/bin/supervisord -c /home/worker/supervisor/supervisord.conf'
+echo 'supervisord -c /home/worker/supervisor/supervisord.conf'
 /usr/bin/supervisord -c /home/worker/supervisor/supervisord.conf

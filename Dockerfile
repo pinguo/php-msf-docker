@@ -506,4 +506,4 @@ RUN rm -rf /tmp/*
 ENTRYPOINT ["/run.sh"]
 
 EXPOSE 22 80 443
-CMD ["/usr/sbin/sshd"]
+CMD ["/usr/sbin/sshd", "-D"]

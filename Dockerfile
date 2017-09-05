@@ -191,7 +191,10 @@ RUN cd ${SRC_DIR} \
     && ./configure 1>/dev/null \
     && make 1>/dev/null \
     && make install \
-    && rm -rf ${SRC_DIR}/libmcrypt*
+    && echo "/usr/local/lib64" >> /etc/ld.so.conf.d/local.conf \
+    && echo "/usr/local/src/libmcrypt-2.5.8/lib/.libs" >> /etc/ld.so.conf.d/local.conf \
+    && chmod gu+x /etc/ld.so.conf.d/local.conf \
+    && ldconfig -v
 
 # -----------------------------------------------------------------------------
 # Install PHP
@@ -252,7 +255,8 @@ RUN cd ${SRC_DIR} \
     && make install \
     && rm -rf ${PHP_INSTALL_DIR}/lib/php.ini \
     && cp -f php.ini-development ${PHP_INSTALL_DIR}/lib/php.ini \
-    && rm -rf ${SRC_DIR}/php*
+    && rm -rf ${SRC_DIR}/php* ${SRC_DIR}/libmcrypt*
+
 
 # -----------------------------------------------------------------------------
 # Install yaml and PHP yaml extension

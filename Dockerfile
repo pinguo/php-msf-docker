@@ -13,7 +13,7 @@ RUN mkdir -p ${SRC_DIR}
 # Install Development tools
 # -----------------------------------------------------------------------------
 RUN rpm --import /etc/pki/rpm-gpg/RPM* \
-    yum -y update \
+    && yum -y update \
     && yum groupinstall -y "Development tools" \
     && yum install -y gcc-c++ zlib-devel bzip2-devel openssl \
     openssl-devel ncurses-devel sqlite-devel wget \

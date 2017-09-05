@@ -30,7 +30,7 @@ RUN yum -y update \
     && ln -s /usr/local/include/python2.7/ /usr/include/python2.7 \
     && wget https://bootstrap.pypa.io/ez_setup.py -O - | python \
     && easy_install pip \
-    && sed -i '1s/.*/\#\!\/usr\/bin\/python2\.6/' /usr/bin/yum \
+    && sed -in-place '1s%.*%!/usr/bin/python2.6%' /usr/bin/yum \
     && cp -r /usr/lib/python2.6/site-packages/yum /usr/local/lib/python2.7/site-packages/ \
     && cp -r /usr/lib/python2.6/site-packages/rpmUtils /usr/local/lib/python2.7/site-packages/ \
     && cp -r /usr/lib/python2.6/site-packages/iniparse /usr/local/lib/python2.7/site-packages/ \

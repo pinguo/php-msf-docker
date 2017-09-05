@@ -27,11 +27,11 @@ RUN cd ${SRC_DIR} \
     && wget -q -O Python-2.7.13.tgz http://mirrors.sohu.com/python/2.7.13/Python-2.7.13.tgz \
     && tar zxf Python-2.7.13.tgz \
     && cd Python-2.7.13 \
-    && ./configure \
+    && ./configure --enable-shared CFLAGS=-fPIC \
     && make \
     && make install \
     && mv /usr/bin/python /usr/bin/python.old \
-    && rm -rf /usr/bin/python-config /usr/local/lib/libpython2.6.a \
+    && rm -f /usr/bin/python-config \
     && ln -s /usr/local/bin/python /usr/bin/python \
     && ln -s /usr/local/bin/python-config /usr/bin/python-config \
     && ln -s /usr/local/include/python2.7/ /usr/include/python2.7 \

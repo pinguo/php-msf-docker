@@ -14,7 +14,7 @@ RUN mkdir -p ${SRC_DIR}
 # -----------------------------------------------------------------------------
 RUN yum -y update \
     && yum groupinstall -y "Development tools" \
-    && yum install -y zlib-devel bzip2-devel openssl \
+    && yum install -y gcc-c++ zlib-devel bzip2-devel openssl \
     openssl-devel ncurses-devel sqlite-devel wget \
     && rm -rf /var/cache/{yum,ldconfig}/* \
     && rm -rf /etc/ld.so.cache \

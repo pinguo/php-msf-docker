@@ -13,6 +13,7 @@ RUN mkdir -p ${SRC_DIR}
 # Install Development tools
 # -----------------------------------------------------------------------------
 RUN rpm --import /etc/pki/rpm-gpg/RPM* \
+    && curl --silent --location https://rpm.nodesource.com/setup_6.x | bash - \
     && yum -y update \
     && yum groupinstall -y "Development tools" \
     && yum install -y gcc-c++ zlib-devel bzip2-devel openssl \
@@ -371,7 +372,7 @@ RUN cd ${SRC_DIR} \
     && tar zxf yac-2.0.2.tgz\
     && cd yac-2.0.2 \
     && ${PHP_INSTALL_DIR}/bin/phpize \
-    && ./configure --with-php-config=${PHP_INSTALL_DIR}/bin/php-config \
+    && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config \
     && make 1>/dev/null \
     && make install \
     && rm -rf $SRC_DIR/yac-*
@@ -381,7 +382,7 @@ RUN cd ${SRC_DIR} \
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
     && wget -q -O swoole-1.9.18.tar.gz https://github.com/swoole/swoole-src/archive/v1.9.18.tar.gz \
-    && tar zxvf swoole-1.9.18.tar.gz \
+    && tar zxf swoole-1.9.18.tar.gz \
     && cd swoole-src-1.9.18/ \
     && ${PHP_INSTALL_DIR}/bin/phpize \
     && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config --enable-async-redis --enable-openssl \
@@ -472,7 +473,6 @@ RUN cd ${SRC_DIR} \
 # -----------------------------------------------------------------------------
 # Install Node and apidoc
 # -----------------------------------------------------------------------------
-RUN curl --silent --location https://rpm.nodesource.com/setup_6.x | bash -
 RUN npm install apidoc -g
 
 # -----------------------------------------------------------------------------

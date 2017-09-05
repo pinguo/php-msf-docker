@@ -31,7 +31,7 @@ RUN cd ${SRC_DIR} \
     && make \
     && make install \
     && mv /usr/bin/python /usr/bin/python.old \
-    && rm -f /usr/bin/python-config \
+    && rm -rf /usr/bin/python-config /usr/local/lib/libpython2.6.a \
     && ln -s /usr/local/bin/python /usr/bin/python \
     && ln -s /usr/local/bin/python-config /usr/bin/python-config \
     && ln -s /usr/local/include/python2.7/ /usr/include/python2.7 \

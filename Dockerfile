@@ -1,26 +1,82 @@
-FROM centos:centos6.6
+FROM centos:centos6.9
 MAINTAINER pinguoops <pinguo-ops@camera360.com>
 
 # -----------------------------------------------------------------------------
-# Install Software & Libraries
+# Make src dir
 # -----------------------------------------------------------------------------
-ADD http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm /root/
-#ADD src /root/
-RUN rpm -Uvh /root/epel-release-6-8.noarch.rpm
+ENV HOME /home/worker
+ENV SRC_DIR $HOME/src
+RUN mkdir -p ${SRC_DIR}
+#ADD src ${SRC_DIR}
 
-RUN yum -y --disablerepo="epel" update nss \
-    && yum -y update \
-    && yum -y install \
-    tar gzip bzip2 unzip file curl wget \
-    pcre openssl openssh-server openssh sudo \
-    python-pip screen vim git telnet expat python-meld3 \
-    bison re2c lemon net-snmp net-snmp-devel \
-    && pip install --upgrade pip \
+# -----------------------------------------------------------------------------
+# Update Python to 2.7.x
+# -----------------------------------------------------------------------------
+RUN yum -y update \
+    && yum groupinstall -y "Development tools" \
+    && yum install -y zlib-devel bzip2-devel \
+    openssl-devel ncurses-devel sqlite-devel \
+    && cd ${SRC_DIR} \
+    && wget -q -O Python-2.7.13.tgz https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz \
+    && tar zxf Python-2.7.13.tgz \
+    && cd Python-2.7.13 \
+    && ./configure \
+    && make \
+    && make install \
+    && mv /usr/bin/python /usr/bin/python.old \
+    && rm -f /usr/bin/python-config \
+    && ln -s /usr/local/bin/python /usr/bin/python \
+    && ln -s /usr/local/bin/python-config /usr/bin/python-config \
+    && ln -s /usr/local/include/python2.7/ /usr/include/python2.7 \
+    && wget https://bootstrap.pypa.io/ez_setup.py -O - | python \
+    && easy_install pip \
+    && sed -i '1s/.*/\#\!\/usr\/bin\/python2\.6/' /usr/bin/yum \
+    && cp -r /usr/lib/python2.6/site-packages/yum /usr/local/lib/python2.7/site-packages/ \
+    && cp -r /usr/lib/python2.6/site-packages/rpmUtils /usr/local/lib/python2.7/site-packages/ \
+    && cp -r /usr/lib/python2.6/site-packages/iniparse /usr/local/lib/python2.7/site-packages/ \
+    && cp -r /usr/lib/python2.6/site-packages/urlgrabber /usr/local/lib/python2.7/site-packages/ \
+    && cp -r /usr/lib64/python2.6/site-packages/rpm /usr/local/lib/python2.7/site-packages/ \
+    && cp -r /usr/lib64/python2.6/site-packages/curl /usr/local/lib/python2.7/site-packages/ \
+    && cp -p /usr/lib64/python2.6/site-packages/pycurl.so /usr/local/lib/python2.7/site-packages/ \
+    && cp -p /usr/lib64/python2.6/site-packages/_sqlitecache.so /usr/local/lib/python2.7/site-packages/ \
+    && cp -p /usr/lib64/python2.6/site-packages/sqlitecachec.py /usr/local/lib/python2.7/site-packages/ \
+    && cp -p /usr/lib64/python2.6/site-packages/sqlitecachec.pyc /usr/local/lib/python2.7/site-packages/ \
+    && cp -p /usr/lib64/python2.6/site-packages/sqlitecachec.pyo /usr/local/lib/python2.7/site-packages/ \
+    && rm -rf ${SRC_DIR}/Python* \
     && rm -rf /var/cache/{yum,ldconfig}/* \
     && rm -rf /etc/ld.so.cache \
     && yum clean all
 
-RUN pip install supervisor \
+# -----------------------------------------------------------------------------
+# Devel libraries for delelopment tools like php & nginx ...
+# -----------------------------------------------------------------------------
+RUN yum -y --disablerepo="epel" update nss \
+    && yum -y install \
+    tar gzip bzip2 unzip file wget \
+    pcre openssl openssh-server openssh sudo \
+    screen vim git telnet expat \
+    re2c lemon net-snmp net-snmp-devel \
+    ca-certificates perl-CPAN m4 \
+    gd libjpeg libpng zlib libevent net-snmp net-snmp-devel \
+    net-snmp-libs freetype libtool-tldl libxml2 unixODBC \
+    libxslt libmcrypt freetds ImageMagick \
+    gd-devel libjpeg-devel libpng-devel zlib-devel \
+    freetype-devel libtool-ltdl libtool-ltdl-devel \
+    libxml2-devel zlib-devel bzip2-devel gettext-devel \
+    curl-devel gettext-devel libevent-devel \
+    libxslt-devel expat-devel unixODBC-devel \
+    openssl-devel libmcrypt-devel freetds-devel \
+    ImageMagick-devel pcre-devel openldap openldap-devel libc-client-devel \
+    jemalloc jemalloc-devel inotify-tools nodejs apr-util yum-utils tree \
+    && ln -s /usr/lib64/libc-client.so /usr/lib/libc-client.so \
+    && rm -rf /var/cache/{yum,ldconfig}/* \
+    && rm -rf /etc/ld.so.cache \
+    && yum clean all
+
+# -----------------------------------------------------------------------------
+# Install supervisor and distribute ...
+# -----------------------------------------------------------------------------
+RUN pip install supervisor distribute \
     && rm -rf /tmp/*
 
 # -----------------------------------------------------------------------------
@@ -38,45 +94,79 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Chongqing /etc/localtime \
     && ssh-keygen -q -b 1024 -N '' -t dsa -f /etc/ssh/ssh_host_dsa_key \
     && echo "NETWORKING=yes" > /etc/sysconfig/network
 
-ENV HOME /home/worker
-ENV SRC_DIR $HOME/src
-RUN mkdir -p ${SRC_DIR}
-#ADD src ${SRC_DIR}
-
-# -----------------------------------------------------------------------------
-# devel libraries for php & nginx ...
-# -----------------------------------------------------------------------------
-RUN yum -y install \
-    ca-certificates gcc gcc-c++ perl-CPAN m4 autoconf \
-    gd libjpeg libtool libpng zlib gettext libevent net-snmp net-snmp-devel net-snmp-libs\
-    freetype libtool-tldl libxml2 unixODBC \
-    libxslt libmcrypt freetds ImageMagick \
-    gd-devel libjpeg-devel libpng-devel zlib-devel \
-    freetype-devel libtool-ltdl libtool-ltdl-devel \
-    libxml2-devel zlib-devel bzip2-devel gettext-devel \
-    curl-devel gettext-devel libevent-devel \
-    libxslt-devel expat-devel unixODBC-devel \
-    openssl-devel libmcrypt-devel freetds-devel \
-    ImageMagick-devel pcre-devel openldap openldap-devel libc-client-devel \
-    && rm -rf /var/cache/{yum,ldconfig}/* \
-    && rm -rf /etc/ld.so.cache \
-    && ln -s /usr/lib64/libc-client.so /usr/lib/libc-client.so \
-    && yum clean all
-
 # -----------------------------------------------------------------------------
 # Install curl
 # -----------------------------------------------------------------------------
 ENV CURL_INSTALL_DIR ${HOME}/libcurl
 RUN cd ${SRC_DIR} \
-    && wget -q -O curl-7.49.0.tar.gz http://curl.askapache.com/download/curl-7.49.0.tar.gz \
-    && tar xzf curl-7.49.0.tar.gz \
-    && cd curl-7.49.0 \
+    && wget -q -O curl-7.55.1.tar.gz http://curl.askapache.com/download/curl-7.55.1.tar.gz \
+    && tar xzf curl-7.55.1.tar.gz \
+    && cd curl-7.55.1 \
     && ./configure --prefix=${CURL_INSTALL_DIR} \
     && make 1>/dev/null \
     && make install \
-    && rm -rf ${SRC_DIR}/curl-7.49.0.tar.gz ${SRC_DIR}/curl-7.49.0
+    && rm -rf ${SRC_DIR}/curl*
 
-# using by php-memcached & memcached
+# -----------------------------------------------------------------------------
+# Install Nginx
+# -----------------------------------------------------------------------------
+ENV nginx_version 1.6.2
+ENV NGINX_INSTALL_DIR ${HOME}/nginx
+RUN cd ${SRC_DIR} \
+    && wget -q -O nginx-1.6.2.tar.gz http://nginx.org/download/nginx-${nginx_version}.tar.gz \
+    && wget -q -O nginx-http-concat.zip https://github.com/alibaba/nginx-http-concat/archive/master.zip \
+    && wget -q -O nginx-logid.zip https://github.com/pinguo-liuzhaohui/nginx-logid/archive/master.zip \
+    && tar zxf nginx-${nginx_version}.tar.gz \
+    && unzip nginx-http-concat.zip -d nginx-http-concat \
+    && unzip nginx-logid.zip -d nginx-logid \
+    && cd nginx-${nginx_version} \
+    && ./configure --prefix=$NGINX_INSTALL_DIR --with-http_stub_status_module --with-http_ssl_module \
+       --add-module=../nginx-http-concat/nginx-http-concat-master --add-module=../nginx-logid/nginx-logid-master 1>/dev/null \
+    && make 1>/dev/null \
+    && make install \
+    && rm -rf ${SRC_DIR}/nginx-*
+
+# -----------------------------------------------------------------------------
+# Install Redis
+# -----------------------------------------------------------------------------
+ENV redis_version 2.8.17
+ENV REDIS_INSTALL_DIR ${HOME}/redis
+RUN cd ${SRC_DIR} \
+    && wget -q -O redis-${redis_version}.tar.gz http://download.redis.io/releases/redis-${redis_version}.tar.gz \
+    && tar xzf redis-${redis_version}.tar.gz \
+    && cd redis-${redis_version} \
+    && make 1>/dev/null \
+    && make PREFIX=$REDIS_INSTALL_DIR install \
+    && rm -rf ${SRC_DIR}/redis-*
+
+# -----------------------------------------------------------------------------
+# Instll graphviz
+# -----------------------------------------------------------------------------
+RUN cd ${SRC_DIR} \
+    && wget -q -O graphviz-2.34.0.tar.gz http://www.graphviz.org/pub/graphviz/stable/SOURCES/graphviz-2.34.0.tar.gz \
+    && tar zxf graphviz-2.34.0.tar.gz \
+    && cd graphviz-2.34.0 \
+    && ./configure \
+    && make -j \
+    && make install \
+    && rm -rf $SRC_DIR/graphviz*
+
+# -----------------------------------------------------------------------------
+# Install hiredis
+# -----------------------------------------------------------------------------
+RUN cd ${SRC_DIR} \
+    && wget -q -O hiredis-0.13.3.tar.gz https://github.com/redis/hiredis/archive/v0.13.3.tar.gz \
+    && tar zxvf hiredis-0.13.3.tar.gz \
+    && cd hiredis-0.13.3 \
+    && make -j \
+    && make install \
+    && echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf \
+    && ldconfig \
+    && rm -rf $SRC_DIR/hiredis-*
+
+# -----------------------------------------------------------------------------
+# Install libmemcached using by php-memcached
+# -----------------------------------------------------------------------------
 ENV LIB_MEMCACHED_INSTALL_DIR /usr/local/
 RUN cd ${SRC_DIR} \
     && wget -q -O libmemcached-1.0.18.tar.gz https://launchpad.net/libmemcached/1.0/1.0.18/+download/libmemcached-1.0.18.tar.gz \
@@ -85,7 +175,7 @@ RUN cd ${SRC_DIR} \
     && ./configure --prefix=$LIB_MEMCACHED_INSTALL_DIR --with-memcached 1>/dev/null \
     && make 1>/dev/null \
     && make install \
-    && rm -rf ${SRC_DIR}/libmemcached-1.0.18.tar.gz ${SRC_DIR}/libmemcached-1.0.18
+    && rm -rf ${SRC_DIR}/libmemcached*
 
 # -----------------------------------------------------------------------------
 # Install PHP
@@ -146,38 +236,10 @@ RUN cd ${SRC_DIR} \
     && make install \
     && rm -rf ${PHP_INSTALL_DIR}/lib/php.ini \
     && cp -f php.ini-development ${PHP_INSTALL_DIR}/lib/php.ini \
-    && rm -rf ${SRC_DIR}/php-${phpversion}.tar.gz ${SRC_DIR}/php-${phpversion}
-
-ENV phpversion 7.1.8
-ENV PHP_INSTALL_DIR ${HOME}/php
-
+    && rm -rf ${SRC_DIR}/php*
 
 # -----------------------------------------------------------------------------
-# Install node yum
-# -----------------------------------------------------------------------------
-RUN curl --silent --location https://rpm.nodesource.com/setup_6.x | bash -
-
-# -----------------------------------------------------------------------------
-# Install jemalloc inotify
-# -----------------------------------------------------------------------------
-RUN yum -v -y install jemalloc jemalloc-devel patch inotify-tools nodejs apr-util yum-utils tree \
-    && rm -rf /var/cache/{yum,ldconfig}/* \
-    && yum clean all
-
-# -----------------------------------------------------------------------------
-# Install ab
-# -----------------------------------------------------------------------------
-RUN cd ${HOME} \
-    && mkdir httpd \
-    && cd httpd \
-    && yumdownloader httpd-tools \
-    && rpm2cpio httpd-tools* | cpio -idmv \
-    && mkdir -p /home/worker/bin \
-    && mv ./usr/bin/ab /home/worker/bin \
-    && cd ${HOME} && rm -rf /home/worker/httpd
-
-# -----------------------------------------------------------------------------
-# Install yaml
+# Install yaml and PHP yaml extension
 # -----------------------------------------------------------------------------
 RUN cd $SRC_DIR \
     && wget -q -O yaml-0.1.7.tar.gz http://pyyaml.org/download/libyaml/yaml-0.1.7.tar.gz \
@@ -195,11 +257,6 @@ RUN cd $SRC_DIR \
     && make >/dev/null \
     && make install \
     && rm -rf $SRC_DIR/yaml-*
-
-# -----------------------------------------------------------------------------
-# Install apidoc
-# -----------------------------------------------------------------------------
-RUN npm install apidoc -g
 
 # -----------------------------------------------------------------------------
 # Install PHP mongodb extensions
@@ -288,7 +345,6 @@ RUN cd ${SRC_DIR} \
 # -----------------------------------------------------------------------------
 # Install PHP yac extensions
 # -----------------------------------------------------------------------------
-
 RUN cd ${SRC_DIR} \
     && wget -q -O yac-2.0.2.tgz https://pecl.php.net/get/yac-2.0.2.tgz \
     && tar zxf yac-2.0.2.tgz\
@@ -298,72 +354,6 @@ RUN cd ${SRC_DIR} \
     && make 1>/dev/null \
     && make install \
     && rm -rf $SRC_DIR/yac-*
-
-# -----------------------------------------------------------------------------
-# Install phpunit
-# -----------------------------------------------------------------------------
-
-RUN cd ${SRC_DIR} \
-    && wget -q -O phpunit.phar https://phar.phpunit.de/phpunit.phar \
-    && mv phpunit.phar ${PHP_INSTALL_DIR}/bin/phpunit \
-    && chmod +x ${PHP_INSTALL_DIR}/bin/phpunit
-
-# -----------------------------------------------------------------------------
-# Install php composer
-# -----------------------------------------------------------------------------
-
-RUN cd ${SRC_DIR} \
-    && curl -sS https://getcomposer.org/installer | $PHP_INSTALL_DIR/bin/php \
-    && chmod +x composer.phar \
-    && mv composer.phar ${PHP_INSTALL_DIR}/bin/composer
-
-# -----------------------------------------------------------------------------
-# Install Nginx
-# -----------------------------------------------------------------------------
-ENV nginx_version 1.6.2
-ENV NGINX_INSTALL_DIR ${HOME}/nginx
-
-RUN cd ${SRC_DIR} \
-    && wget -q -O nginx-1.6.2.tar.gz http://nginx.org/download/nginx-${nginx_version}.tar.gz \
-    && wget -q -O nginx-http-concat.zip https://github.com/alibaba/nginx-http-concat/archive/master.zip \
-    && wget -q -O nginx-logid.zip https://github.com/pinguo-liuzhaohui/nginx-logid/archive/master.zip \
-    && tar zxf nginx-${nginx_version}.tar.gz \
-    && unzip nginx-http-concat.zip -d nginx-http-concat \
-    && unzip nginx-logid.zip -d nginx-logid \
-    && cd nginx-${nginx_version} \
-    && ./configure --prefix=$NGINX_INSTALL_DIR --with-http_stub_status_module --with-http_ssl_module \
-       --add-module=../nginx-http-concat/nginx-http-concat-master --add-module=../nginx-logid/nginx-logid-master 1>/dev/null \
-    && make 1>/dev/null \
-    && make install \
-    && rm -rf ${SRC_DIR}/nginx-*
-
-# -----------------------------------------------------------------------------
-# Install Redis
-# -----------------------------------------------------------------------------
-ENV redis_version 2.8.17
-ENV REDIS_INSTALL_DIR ${HOME}/redis
-
-RUN cd ${SRC_DIR} \
-    && wget -q -O redis-${redis_version}.tar.gz http://download.redis.io/releases/redis-${redis_version}.tar.gz \
-    && tar xzf redis-${redis_version}.tar.gz \
-    && cd redis-${redis_version} \
-    && make 1>/dev/null \
-    && make PREFIX=$REDIS_INSTALL_DIR install \
-    && rm -rf ${SRC_DIR}/redis-*
-
-# -----------------------------------------------------------------------------
-# Install hiredis
-# -----------------------------------------------------------------------------
-
-RUN cd ${SRC_DIR} \
-    && wget -q -O hiredis-0.13.3.tar.gz https://github.com/redis/hiredis/archive/v0.13.3.tar.gz \
-    && tar zxvf hiredis-0.13.3.tar.gz \
-    && cd hiredis-0.13.3 \
-    && make -j \
-    && make install \
-    && echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf \
-    && ldconfig \
-    && rm -rf $SRC_DIR/hiredis-*
 
 # -----------------------------------------------------------------------------
 # Install PHP swoole extensions
@@ -394,30 +384,20 @@ RUN cd ${SRC_DIR} \
     && rm -rf ${SRC_DIR}/inotify-*
 
 # -----------------------------------------------------------------------------
-# Install jq
+# Install phpunit
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O jq-1.5.tar.gz https://github.com/stedolan/jq/archive/jq-1.5.tar.gz \
-    && tar zxf jq-1.5.tar.gz \
-    && cd jq-jq-1.5 \
-    && ./configure --disable-maintainer-mode \
-    && make \
-    && make install \
-    && rm -rf ${SRC_DIR}/jq-*
+    && wget -q -O phpunit.phar https://phar.phpunit.de/phpunit.phar \
+    && mv phpunit.phar ${PHP_INSTALL_DIR}/bin/phpunit \
+    && chmod +x ${PHP_INSTALL_DIR}/bin/phpunit
 
 # -----------------------------------------------------------------------------
-# Update Git
+# Install php composer
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && yum -y remove git \
-    && wget -q -O git-2.14.1.tar.gz https://github.com/git/git/archive/v2.14.1.tar.gz \
-    && tar zxf git-2.14.1.tar.gz \
-    && cd git-2.14.1 \
-    && make configure \
-    && ./configure --without-iconv --prefix=/usr/local/ --with-curl=${CURL_INSTALL_DIR} \
-    && make -j \
-    && make install \
-    && rm -rf $SRC_DIR/git-2*
+    && curl -sS https://getcomposer.org/installer | $PHP_INSTALL_DIR/bin/php \
+    && chmod +x composer.phar \
+    && mv composer.phar ${PHP_INSTALL_DIR}/bin/composer
 
 # -----------------------------------------------------------------------------
 # Install PhpDocumentor
@@ -430,27 +410,55 @@ RUN cd ${PHP_INSTALL_DIR} \
     && rm -rf /tmp/*
 
 # -----------------------------------------------------------------------------
+# Install jq
+# -----------------------------------------------------------------------------
+RUN cd ${SRC_DIR} \
+    && wget -q -O jq-1.5.tar.gz https://github.com/stedolan/jq/archive/jq-1.5.tar.gz \
+    && tar zxf jq-1.5.tar.gz \
+    && cd jq-jq-1.5 \
+    && ./configure --disable-maintainer-mode \
+    && make \
+    && make install \
+    && rm -rf ${SRC_DIR}/jq-*
+
+# -----------------------------------------------------------------------------
+# Install Apache ab
+# -----------------------------------------------------------------------------
+RUN cd ${HOME} \
+    && yum -y remove httpd \
+    && mkdir httpd \
+    && cd httpd \
+    && yumdownloader httpd-tools \
+    && rpm2cpio httpd-tools* | cpio -idmv \
+    && mkdir -p /home/worker/bin \
+    && mv ./usr/bin/ab /home/worker/bin \
+    && cd ${HOME} && rm -rf /home/worker/httpd
+
+# -----------------------------------------------------------------------------
+# Update Git
+# -----------------------------------------------------------------------------
+RUN cd ${SRC_DIR} \
+    && yum -y remove git subversion \
+    && wget -q -O git-2.14.1.tar.gz https://github.com/git/git/archive/v2.14.1.tar.gz \
+    && tar zxf git-2.14.1.tar.gz \
+    && cd git-2.14.1 \
+    && make configure \
+    && ./configure --without-iconv --prefix=/usr/local/ --with-curl=${CURL_INSTALL_DIR} \
+    && make -j \
+    && make install \
+    && rm -rf $SRC_DIR/git-2*
+
+# -----------------------------------------------------------------------------
+# Install Node and apidoc
+# -----------------------------------------------------------------------------
+RUN curl --silent --location https://rpm.nodesource.com/setup_6.x | bash -
+RUN npm install apidoc -g
+
+# -----------------------------------------------------------------------------
 # Copy Config
 # -----------------------------------------------------------------------------
 ADD run.sh /
 ADD config /home/worker/
-
-# -----------------------------------------------------------------------------
-# yum
-# -----------------------------------------------------------------------------
-RUN yum -v -y install tree \
-
-# -----------------------------------------------------------------------------
-# instll graphviz
-# -----------------------------------------------------------------------------
-RUN cd ${SRC_DIR} \
-    && wget -q -O graphviz-2.34.0.tar.gz http://www.graphviz.org/pub/graphviz/stable/SOURCES/graphviz-2.34.0.tar.gz \
-    && tar zxf graphviz-2.34.0.tar.gz \
-    && cd graphviz-2.34.0 \
-    && ./configure \
-    && make -j \
-    && make install \
-    && rm -rf $SRC_DIR/graphviz*
 
 # -----------------------------------------------------------------------------
 # Add user worker
@@ -467,7 +475,6 @@ RUN useradd -M -u 1000 worker \
     && chmod a+x /run.sh \
     && chmod a+x ${PHP_INSTALL_DIR}/bin/checkstyle \
     && chmod a+x ${PHP_INSTALL_DIR}/bin/mergeCoverReport
-
 
 # -----------------------------------------------------------------------------
 # clean tmp file

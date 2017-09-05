@@ -182,6 +182,18 @@ RUN cd ${SRC_DIR} \
     && rm -rf ${SRC_DIR}/libmemcached*
 
 # -----------------------------------------------------------------------------
+# Install libmcrypt using by php-mcrypt
+# -----------------------------------------------------------------------------
+RUN cd ${SRC_DIR} \
+    && wget -q -O libmcrypt-2.6.8.tar.gz http://softlayer.dl.sourceforge.net/sourceforge/mcrypt/libmcrypt-2.6.8.tar.gz \
+    && tar xzf libmcrypt-2.6.8.tar.gz \
+    && cd libmcrypt-2.6.8 \
+    && ./configure 1>/dev/null \
+    && make 1>/dev/null \
+    && make install \
+    && rm -rf ${SRC_DIR}/libmcrypt*
+
+# -----------------------------------------------------------------------------
 # Install PHP
 # -----------------------------------------------------------------------------
 ENV phpversion 7.1.8

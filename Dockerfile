@@ -185,13 +185,13 @@ RUN cd ${SRC_DIR} \
 # Install libmcrypt using by php-mcrypt
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O libmcrypt-2.6.8.tar.gz https://nchc.dl.sourceforge.net/project/mcrypt/MCrypt/2.6.8/mcrypt-2.6.8.tar.gz \
-    && tar xzf libmcrypt-2.6.8.tar.gz \
-    && cd mcrypt-2.6.8 \
+    && wget -q -O libmcrypt-2.5.8.tar.gz https://nchc.dl.sourceforge.net/project/mcrypt/Libmcrypt/2.5.8/libmcrypt-2.5.8.tar.gz \
+    && tar xzf libmcrypt-2.5.8.tar.gz \
+    && cd libmcrypt-2.5.8 \
     && ./configure 1>/dev/null \
     && make 1>/dev/null \
     && make install \
-    && rm -rf ${SRC_DIR}/libmcrypt* ${SRC_DIR}/mcrypt*
+    && rm -rf ${SRC_DIR}/libmcrypt*
 
 # -----------------------------------------------------------------------------
 # Install PHP

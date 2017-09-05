@@ -10,14 +10,21 @@ RUN mkdir -p ${SRC_DIR}
 #ADD src ${SRC_DIR}
 
 # -----------------------------------------------------------------------------
-# Update Python to 2.7.x
+# Install Development tools
 # -----------------------------------------------------------------------------
 RUN yum -y update \
     && yum groupinstall -y "Development tools" \
     && yum install -y zlib-devel bzip2-devel openssl \
     openssl-devel ncurses-devel sqlite-devel wget \
-    && cd ${SRC_DIR} \
-    && wget -q -O Python-2.7.13.tgz https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz \
+    && rm -rf /var/cache/{yum,ldconfig}/* \
+    && rm -rf /etc/ld.so.cache \
+    && yum clean all
+
+# -----------------------------------------------------------------------------
+# Update Python to 2.7.x
+# -----------------------------------------------------------------------------
+RUN cd ${SRC_DIR} \
+    && wget -q -O Python-2.7.13.tgz http://mirrors.sohu.com/python/2.7.13/Python-2.7.13.tgz \
     && tar zxf Python-2.7.13.tgz \
     && cd Python-2.7.13 \
     && ./configure \
@@ -30,7 +37,7 @@ RUN yum -y update \
     && ln -s /usr/local/include/python2.7/ /usr/include/python2.7 \
     && wget https://bootstrap.pypa.io/ez_setup.py -O - | python \
     && easy_install pip \
-    && sed -in-place '1s%.*%!/usr/bin/python2.6%' /usr/bin/yum \
+    && sed -in-place '1s%.*%#!/usr/bin/python2.6%' /usr/bin/yum \
     && cp -r /usr/lib/python2.6/site-packages/yum /usr/local/lib/python2.7/site-packages/ \
     && cp -r /usr/lib/python2.6/site-packages/rpmUtils /usr/local/lib/python2.7/site-packages/ \
     && cp -r /usr/lib/python2.6/site-packages/iniparse /usr/local/lib/python2.7/site-packages/ \
@@ -42,16 +49,12 @@ RUN yum -y update \
     && cp -p /usr/lib64/python2.6/site-packages/sqlitecachec.py /usr/local/lib/python2.7/site-packages/ \
     && cp -p /usr/lib64/python2.6/site-packages/sqlitecachec.pyc /usr/local/lib/python2.7/site-packages/ \
     && cp -p /usr/lib64/python2.6/site-packages/sqlitecachec.pyo /usr/local/lib/python2.7/site-packages/ \
-    && rm -rf ${SRC_DIR}/Python* \
-    && rm -rf /var/cache/{yum,ldconfig}/* \
-    && rm -rf /etc/ld.so.cache \
-    && yum clean all
+    && rm -rf ${SRC_DIR}/Python*
 
 # -----------------------------------------------------------------------------
 # Devel libraries for delelopment tools like php & nginx ...
 # -----------------------------------------------------------------------------
-RUN yum -y --disablerepo="epel" update nss \
-    && yum -y install \
+RUN yum -y install \
     tar gzip bzip2 unzip file \
     pcre openssh-server openssh sudo \
     screen vim git telnet expat \

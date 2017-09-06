@@ -143,6 +143,7 @@ copy("{$tmp}php-msf-demo/config/http.php", $applicationDir . '/config/http.php')
 copy("{$tmp}php-msf-demo/config/fileHeader.php", $applicationDir . '/config/fileHeader.php');
 copy("{$tmp}php-msf-demo/config/check.php", $applicationDir . '/config/check.php');
 copy("{$tmp}php-msf-demo/app/AppServer.php", $applicationDir . '/app/AppServer.php');
+copy("{$tmp}php-msf-demo/app/Controllers/Welcome.php", $applicationDir . '/app/Controllers/Welcome.php');
 $conf = <<<eot
 <?php
 \$config = [];

@@ -198,6 +198,18 @@ RUN cd ${SRC_DIR} \
     && ldconfig -v
 
 # -----------------------------------------------------------------------------
+# Install re2c for PHP
+# -----------------------------------------------------------------------------
+run cd $SRC_DIR \
+    && wget -q -O re2c-1.0.tar.gz https://excellmedia.dl.sourceforge.net/project/re2c/old/re2c-1.0.tar.gz \
+    && tar xzf re2c-1.0.tar.gz \
+    && cd re2c-1.0 \
+    && ./configure \
+    && make \
+    && make install \
+    && rm -rf ${SRC_DIR}/re2c*
+
+# -----------------------------------------------------------------------------
 # Install PHP
 # -----------------------------------------------------------------------------
 ENV phpversion 7.1.8
@@ -257,18 +269,6 @@ RUN cd ${SRC_DIR} \
     && rm -rf ${PHP_INSTALL_DIR}/lib/php.ini \
     && cp -f php.ini-development ${PHP_INSTALL_DIR}/lib/php.ini \
     && rm -rf ${SRC_DIR}/php* ${SRC_DIR}/libmcrypt*
-
-# -----------------------------------------------------------------------------
-# Install re2c for PHP extension
-# -----------------------------------------------------------------------------
-run cd $SRC_DIR \
-    && wget -q -O re2c-1.0.tar.gz https://excellmedia.dl.sourceforge.net/project/re2c/old/re2c-1.0.tar.gz \
-    && tar xzf re2c-1.0.tar.gz \
-    && cd re2c-1.0 \
-    && ./configure \
-    && make \
-    && make install \
-    && rm -rf ${SRC_DIR}/re2c*
 
 # -----------------------------------------------------------------------------
 # Install yaml and PHP yaml extension

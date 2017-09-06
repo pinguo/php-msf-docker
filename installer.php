@@ -161,6 +161,7 @@ shell_exec("sed -i 's/pinguo\/php-msf-demo/{$systemName}/g' composer.json");
 shell_exec("sed -i 's/export\ MSF_ENV=\w\+//g' " . $_ENV['HOME'] . '/.bashrc');
 shell_exec("echo export MSF_ENV=" . $applicationEnv . '>>' .  $_ENV['HOME'] . '/.bashrc');
 shell_exec("sed -i 's/=\ 8000/=\ {$port}/g' ./config/http.php");
+shell_exec("sed -i 's/localhost:8000/localhost:{$port}/g' ./config/http.php");
 writeln('Replace application config success');
 
 // 清理

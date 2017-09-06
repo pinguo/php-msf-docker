@@ -30,46 +30,42 @@ function writeLine($messages)
 
 // 是否安装swoole
 if (!defined('SWOOLE_VERSION')) {
-    writeLine("Swoole Extension Not Found");
+    writeln("Swoole Extension Not Found");
     exit(255);
 }
 
-// 是否安装swoole
-if (!defined('SWOOLE_VERSION')) {
-    writeLine("Swoole Extension Not Found");
+// 是否安装redis
+if (!class_exists(\Redis::class)) {
+    writeln("phpredis Extension Not Found");
     exit(255);
 }
 
 // 是否安装yac
 if (!defined('YAC_VERSION')) {
-    writeLine("Yac Extension Not Found");
+    writeln("Yac Extension Not Found");
     exit(255);
 }
 
 // 检查PHP
 if (version_compare(PHP_VERSION, '7.0.0') < 0) {
-    writeLine("PHP Version Is Too Lower, Please Install >= 7.0.0");
+    writeln("PHP Version Is Too Lower, Please Install >= 7.0.0");
     exit(255);
 }
 
 // 检查Swoole
 if (version_compare(SWOOLE_VERSION, '1.9.15') < 0) {
-    writeLine("Swoole Version Is Too Lower, Please Install >= 1.9.15");
+    writeln("Swoole Version Is Too Lower, Please Install >= 1.9.15");
     exit(255);
 }
 
-// 克隆模板项目
-$tmp       = '/tmp/';
-$gitBinary = trim(shell_exec('which git'));
-$gitRepo   = 'https://github.com/pinguo/php-msf-demo';
-writeln("git clone {$gitRepo}");
-shell_exec("$gitBinary clone $gitRepo {$tmp}php-msf-demo");
 // 配置应用
+$tmp                   = '/tmp/';
+$gitBinary             = trim(shell_exec('which git'));
+$phpBinPath            = trim(shell_exec('which php'));
+$composerBin           = trim(shell_exec('which composer'));
 $defaultSystemName     = 'demo';
 $defaultApplicationDir = '/home/worker/data/www/';
-$phpBinPath            = trim(shell_exec('which php'));
 $defaultPort           = 80;
-$composerBin           = trim(shell_exec('which composer'));
 // 检查php
 if (empty($phpBinPath)) {
     writeln("no php command");
@@ -81,6 +77,17 @@ if (empty($composerBin)) {
     writeln("no php composer command");
     exit(255);
 }
+
+// 检查Git
+if (empty($gitBinary)) {
+    writeln("no git command");
+    exit(255);
+}
+
+// 克隆模板项目
+$gitRepo   = 'https://github.com/pinguo/php-msf-demo';
+writeln("git clone {$gitRepo}");
+shell_exec("$gitBinary clone $gitRepo {$tmp}php-msf-demo");
 
 // 读取用户输入配置
 writeLine("Input application directory ($defaultApplicationDir): ");

@@ -2,9 +2,10 @@
 
 # Registry
 
-- 公网地址: `registry.cn-hangzhou.aliyuncs.com/pinguo-ops/php-msf-docker`
-- 阿里云经典内网: `registry-internal.cn-hangzhou.aliyuncs.com/pinguo-ops/php-msf-docker`
-- 阿里云VPC网络： `registry-vpc.cn-hangzhou.aliyuncs.com/pinguo-ops/php-msf-docker`
+- 公网地址: `docker pull registry.cn-hangzhou.aliyuncs.com/pinguo-ops/php-msf-docker`
+- 阿里云经典内网: `docker pull registry-internal.cn-hangzhou.aliyuncs.com/pinguo-ops/php-msf-docker`
+- 阿里云VPC网络： `docker pull registry-vpc.cn-hangzhou.aliyuncs.com/pinguo-ops/php-msf-docker`
+- DockerHub(国外): `docker pull pinguoops/php-msf-docker`
 
 # 镜像内容
 

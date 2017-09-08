@@ -93,8 +93,8 @@ shell_exec("$gitBinary clone $gitRepo {$tmp}php-msf-demo");
 writeLine("Input application directory ($defaultApplicationDir): ");
 do {
     $applicationDir = fgets(STDIN);
-} while (empty($applicationEnv));
-var_dump($applicationEnv);
+} while (empty($applicationDir));
+var_dump($applicationDir);
 exit(0);
 writeLine("Input application name ($defaultSystemName): ");
 $systemName            = trim(fgets(STDIN));

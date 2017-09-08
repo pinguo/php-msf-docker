@@ -1,3 +1,4 @@
+#!/bin/env php
 <?php
 /**
  * PHP-MSF快速安装程序

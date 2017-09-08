@@ -193,4 +193,4 @@ writeln('PHP     Version: ' . PHP_VERSION);
 writeln('Application ENV: ' . $applicationEnv);
 writeln("Listen     Addr: " . '0.0.0.0');
 writeln("Listen     Port: " . $port);
-echo shell_exec("./server.php");
+shell_exec("MSF_ENV=" . $applicationEnv . " ./server.php");

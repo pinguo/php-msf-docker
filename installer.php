@@ -91,8 +91,10 @@ shell_exec("$gitBinary clone $gitRepo {$tmp}php-msf-demo");
 
 // 读取用户输入配置
 writeLine("Input application directory ($defaultApplicationDir): ");
-$applicationDir        = fgets(STDIN);
-var_dump($applicationDir);
+do {
+    $applicationDir = fgets(STDIN);
+} while (empty($applicationEnv));
+var_dump($applicationEnv);
 exit(0);
 writeLine("Input application name ($defaultSystemName): ");
 $systemName            = trim(fgets(STDIN));

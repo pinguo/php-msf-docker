@@ -91,7 +91,7 @@ shell_exec("$gitBinary clone $gitRepo {$tmp}php-msf-demo");
 
 // 读取用户输入配置
 writeLine("Input application directory ($defaultApplicationDir): ");
-$applicationDir        = fgets(STDIN);
+$applicationDir        = trim(fgets(STDIN));
 writeLine("Input application name ($defaultSystemName): ");
 $systemName            = trim(fgets(STDIN));
 writeLine("Input application env (will write to " . $_ENV['HOME'] . "/.bashrc): ");

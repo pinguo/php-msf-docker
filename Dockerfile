@@ -482,9 +482,9 @@ RUN cd ${SRC_DIR} \
     && rm -rf $SRC_DIR/git-2*
 
 # -----------------------------------------------------------------------------
-# Install Node and apidoc
+# Install Node and apidoc and nodemon
 # -----------------------------------------------------------------------------
-RUN npm install apidoc -g
+RUN npm install apidoc nodemon -g
 
 # -----------------------------------------------------------------------------
 # Copy Config

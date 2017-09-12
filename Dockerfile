@@ -64,14 +64,14 @@ RUN yum -y install \
     ca-certificates perl-CPAN m4 \
     gd libjpeg libpng zlib libevent net-snmp net-snmp-devel \
     net-snmp-libs freetype libtool-tldl libxml2 unixODBC \
-    libxslt libmcrypt freetds ImageMagick \
+    libxslt libmcrypt freetds \
     gd-devel libjpeg-devel libpng-devel zlib-devel \
     freetype-devel libtool-ltdl libtool-ltdl-devel \
     libxml2-devel zlib-devel bzip2-devel gettext-devel \
     curl-devel gettext-devel libevent-devel \
     libxslt-devel expat-devel unixODBC-devel \
     openssl-devel libmcrypt-devel freetds-devel \
-    ImageMagick-devel pcre-devel openldap openldap-devel libc-client-devel \
+    pcre-devel openldap openldap-devel libc-client-devel \
     jemalloc jemalloc-devel inotify-tools nodejs apr-util yum-utils tree \
     && ln -s /usr/lib64/libc-client.so /usr/lib/libc-client.so \
     && rm -rf /var/cache/{yum,ldconfig}/* \
@@ -148,9 +148,11 @@ RUN cd ${SRC_DIR} \
 # Install ImageMagick
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O ImageMagick-7.0.7-0.tar.gz https://www.imagemagick.org/download/ImageMagick-7.0.7-0.tar.gz \
-    && tar zxf ImageMagick-7.0.7-0.tar.gz \
-    && cd ImageMagick-7.0.7-0 \
+    && wget -q -O ImageMagick.tar.gz https://www.imagemagick.org/download/ImageMagick.tar.gz \
+    && tar zxf ImageMagick.tar.gz \
+    && rm -rf ImageMagick.tar.gz \
+    && ImageMagickPath=`ls` \
+    && cd ${ImageMagickPath} \
     && ./configure \
     && make \
     && make install \

@@ -25,6 +25,7 @@
 - Python 2.7.13
 - Supervisor
 - ApiDoc
+- Nodemon
 
 # Docker用户名密码
 

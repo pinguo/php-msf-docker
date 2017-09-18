@@ -170,7 +170,7 @@ RUN cd ${SRC_DIR} \
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
     && wget -q -O rabbitmq-c-0.8.0.tar.gz  https://github.com/alanxz/rabbitmq-c/archive/v0.8.0.tar.gz \
-    && tar zxvf rabbitmq-c-0.8.0.tar.gz \
+    && tar zxf rabbitmq-c-0.8.0.tar.gz \
     && cd rabbitmq-c-0.8.0 \
     && autoreconf -i \
     && ./configure --prefix=${HOME}/rabbitmq-c 1>/dev/null \
@@ -180,7 +180,7 @@ RUN cd ${SRC_DIR} \
 
 RUN cd ${SRC_DIR} \
     && wget -O otp_src_20.0.tar.gz http://erlang.org/download/otp_src_20.0.tar.gz \
-    && tar otp_src_20.0.tar.gz \
+    && tar zxf otp_src_20.0.tar.gz \
     && cd otp_src_20.0 \
     && ./configure --enable-hipe --with-ssl \
     && make \

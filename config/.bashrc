@@ -6,7 +6,7 @@ if [ -f /etc/bashrc ]; then
 fi
 
 # User specific aliases and functions
-PATH=$PATH:$HOME/bin:$HOME/php/bin:$HOME/nginx/sbin:$HOME/memcached/bin:$HOME/redis/bin:$HOME/mongodb/2.4.10/bin
+PATH=$PATH:$HOME/bin:$HOME/php/bin:$HOME/nginx/sbin:$HOME/memcached/bin:$HOME/redis/bin:$HOME/mongodb/3.4.9/bin
 export PATH
 
 alias supervisorctl='php /home/worker/supervisor/msf.php;supervisorctl -c /home/worker/supervisor/supervisord.conf'

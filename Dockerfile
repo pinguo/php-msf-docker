@@ -13,7 +13,7 @@ RUN mkdir -p ${SRC_DIR}
 # Install Development tools
 # -----------------------------------------------------------------------------
 RUN rpm --import /etc/pki/rpm-gpg/RPM* \
-    && curl --silent --location https://rpm.nodesource.com/setup_6.x | bash - \
+    && curl --silent --location https://raw.githubusercontent.com/nodesource/distributions/master/rpm/setup_6.x | bash - \
     && yum -y update \
     && yum groupinstall -y "Development tools" \
     && yum install -y gcc-c++ zlib-devel bzip2-devel openssl \
@@ -214,7 +214,7 @@ run cd $SRC_DIR \
 # -----------------------------------------------------------------------------
 # Install PHP
 # -----------------------------------------------------------------------------
-ENV phpversion 7.1.8
+ENV phpversion 7.1.9
 ENV PHP_INSTALL_DIR ${HOME}/php
 RUN cd ${SRC_DIR} \
     && ls -l \
@@ -393,16 +393,17 @@ RUN cd ${SRC_DIR} \
 # -----------------------------------------------------------------------------
 # Install PHP swoole extensions
 # -----------------------------------------------------------------------------
+ENV swooleVersion 1.9.19
 RUN cd ${SRC_DIR} \
-    && wget -q -O swoole-1.9.18.tar.gz https://github.com/swoole/swoole-src/archive/v1.9.18.tar.gz \
-    && tar zxf swoole-1.9.18.tar.gz \
-    && cd swoole-src-1.9.18/ \
+    && wget -q -O swoole-${swooleVersion}.tar.gz https://github.com/swoole/swoole-src/archive/v${swooleVersion}.tar.gz \
+    && tar zxf swoole-${swooleVersion}.tar.gz \
+    && cd swoole-src-${swooleVersion}/ \
     && ${PHP_INSTALL_DIR}/bin/phpize \
     && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config --enable-async-redis --enable-openssl \
     && make clean 1>/dev/null \
     && make 1>/dev/null \
     && make install \
-    && rm -rf ${SRC_DIR}/swoole-*
+    && rm -rf ${SRC_DIR}/swoole*
 
 # -----------------------------------------------------------------------------
 # Install PHP inotify extensions

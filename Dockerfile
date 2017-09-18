@@ -13,7 +13,7 @@ RUN mkdir -p ${SRC_DIR}
 # Install Development tools
 # -----------------------------------------------------------------------------
 RUN rpm --import /etc/pki/rpm-gpg/RPM* \
-    && curl --silent --location https://rpm.nodesource.com/setup_6.x | bash - \
+    && curl --silent --location https://raw.githubusercontent.com/nodesource/distributions/master/rpm/setup_6.x | bash - \
     && yum -y update \
     && yum groupinstall -y "Development tools" \
     && yum install -y gcc-c++ zlib-devel bzip2-devel openssl \
@@ -145,6 +145,59 @@ RUN cd ${SRC_DIR} \
     && rm -rf ${SRC_DIR}/redis-*
 
 # -----------------------------------------------------------------------------
+# Install Mongodb
+# -----------------------------------------------------------------------------
+ENV mongodb_version 3.4.9
+ENV MONGODB_INSTALL_DIR ${HOME}/mongodb/${mongodb_version}
+RUN cd ${SRC_DIR} \
+    && wget -O mongodb-linux-x86_64-rhel62-${mongodb_version}.tgz https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.4.9.tgz \
+    && tar xzf mongodb-linux-x86_64-rhel62-${mongodb_version}.tgz \
+    && mkdir -p ${MONGODB_INSTALL_DIR} \
+    && mv mongodb-linux-x86_64-rhel62-${mongodb_version}/* ${MONGODB_INSTALL_DIR} \
+    && rm -rf ${SRC_DIR}/mongodb*
+
+## -----------------------------------------------------------------------------
+## Install Mysql(client)
+## -----------------------------------------------------------------------------
+RUN cd ${SRC_DIR} \
+    && wget -O mysql57-community-release-el6-11.noarch.rpm https://dev.mysql.com/get/mysql57-community-release-el6-11.noarch.rpm \
+    && rpm -ivh --nodigest --nosignature mysql57-community-release-el6-11.noarch.rpm \
+    && yum -v -y install mysql-community-client ncurses-devel \
+    && rm -f mysql57-community-release-el6-11.noarch.rpm
+
+# -----------------------------------------------------------------------------
+# Install Rabbitmq
+# -----------------------------------------------------------------------------
+RUN cd ${SRC_DIR} \
+    && wget -q -O rabbitmq-c-0.8.0.tar.gz  https://github.com/alanxz/rabbitmq-c/archive/v0.8.0.tar.gz \
+    && tar zxvf rabbitmq-c-0.8.0.tar.gz \
+    && cd rabbitmq-c-0.8.0 \
+    && autoreconf -i \
+    && ./configure --prefix=${HOME}/rabbitmq-c 1>/dev/null \
+    && make 1>/dev/null \
+    && make install \
+    && rm -rf ${SRC_DIR}/rabbitmq-c*
+
+RUN cd ${SRC_DIR} \
+    && wget -O otp_src_20.0.tar.gz http://erlang.org/download/otp_src_20.0.tar.gz \
+    && tar otp_src_20.0.tar.gz \
+    && cd otp_src_20.0 \
+    && ./configure --enable-hipe --with-ssl \
+    && make \
+    && make install \
+    && rm -rf /var/cache/{yum,ldconfig}/* \
+    && rm -rf /etc/ld.so.cache \
+    && yum clean all \
+    && rm -rf ${SRC_DIR}/otp*
+
+ENV RABBIT_INSTALL_DIR $HOME/rabbitmq
+RUN cd ${SRC_DIR} \
+    && wget -O rabbitmq-server-generic-unix-3.6.12.tar.xz http://www.rabbitmq.com/releases/rabbitmq-server/v3.6.12/rabbitmq-server-generic-unix-3.6.12.tar.xz \
+    && tar xf rabbitmq-server-generic-unix-3.6.12.tar.xz \
+    && mv rabbitmq_server-3.6.12 ${RABBIT_INSTALL_DIR} \
+    && rm -rf ${SRC_DIR}/rabbitmq*
+
+# -----------------------------------------------------------------------------
 # Install ImageMagick
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
@@ -214,7 +267,7 @@ run cd $SRC_DIR \
 # -----------------------------------------------------------------------------
 # Install PHP
 # -----------------------------------------------------------------------------
-ENV phpversion 7.1.8
+ENV phpversion 7.1.9
 ENV PHP_INSTALL_DIR ${HOME}/php
 RUN cd ${SRC_DIR} \
     && ls -l \
@@ -307,6 +360,20 @@ RUN cd ${SRC_DIR} \
     && rm -rf ${SRC_DIR}/mongodb-*
 
 # -----------------------------------------------------------------------------
+# Install PHP amqp extensions
+# -----------------------------------------------------------------------------
+RUN cd ${SRC_DIR} \
+    && wget -q -O amqp-1.9.1.tgz http://pecl.php.net/get/amqp-1.9.1.tgz \
+    && tar zxvf amqp-1.9.1.tgz \
+    && cd amqp-1.9.1 \
+    && ${PHP_INSTALL_DIR}/bin/phpize \
+    && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config --with-librabbitmq-dir=${HOME}/rabbitmq-c 1>/dev/null \
+    && make clean \
+    && make 1>/dev/null \
+    && make install \
+    && rm -rf ${SRC_DIR}/amqp*
+
+# -----------------------------------------------------------------------------
 # Install PHP redis extensions
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
@@ -393,16 +460,17 @@ RUN cd ${SRC_DIR} \
 # -----------------------------------------------------------------------------
 # Install PHP swoole extensions
 # -----------------------------------------------------------------------------
+ENV swooleVersion 1.9.19
 RUN cd ${SRC_DIR} \
-    && wget -q -O swoole-1.9.18.tar.gz https://github.com/swoole/swoole-src/archive/v1.9.18.tar.gz \
-    && tar zxf swoole-1.9.18.tar.gz \
-    && cd swoole-src-1.9.18/ \
+    && wget -q -O swoole-${swooleVersion}.tar.gz https://github.com/swoole/swoole-src/archive/v${swooleVersion}.tar.gz \
+    && tar zxf swoole-${swooleVersion}.tar.gz \
+    && cd swoole-src-${swooleVersion}/ \
     && ${PHP_INSTALL_DIR}/bin/phpize \
     && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config --enable-async-redis --enable-openssl \
     && make clean 1>/dev/null \
     && make 1>/dev/null \
     && make install \
-    && rm -rf ${SRC_DIR}/swoole-*
+    && rm -rf ${SRC_DIR}/swoole*
 
 # -----------------------------------------------------------------------------
 # Install PHP inotify extensions

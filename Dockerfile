@@ -115,10 +115,10 @@ RUN cd ${SRC_DIR} \
 # -----------------------------------------------------------------------------
 # Install Nginx
 # -----------------------------------------------------------------------------
-ENV nginx_version 1.6.2
+ENV nginx_version 1.12.2
 ENV NGINX_INSTALL_DIR ${HOME}/nginx
 RUN cd ${SRC_DIR} \
-    && wget -q -O nginx-1.6.2.tar.gz http://nginx.org/download/nginx-${nginx_version}.tar.gz \
+    && wget -q -O nginx-${nginx_version}.tar.gz http://nginx.org/download/nginx-${nginx_version}.tar.gz \
     && wget -q -O nginx-http-concat.zip https://github.com/alibaba/nginx-http-concat/archive/master.zip \
     && wget -q -O nginx-logid.zip https://github.com/pinguo-liuzhaohui/nginx-logid/archive/master.zip \
     && tar zxf nginx-${nginx_version}.tar.gz \
@@ -134,7 +134,7 @@ RUN cd ${SRC_DIR} \
 # -----------------------------------------------------------------------------
 # Install Redis
 # -----------------------------------------------------------------------------
-ENV redis_version 2.8.17
+ENV redis_version 3.2.11
 ENV REDIS_INSTALL_DIR ${HOME}/redis
 RUN cd ${SRC_DIR} \
     && wget -q -O redis-${redis_version}.tar.gz http://download.redis.io/releases/redis-${redis_version}.tar.gz \
@@ -307,6 +307,22 @@ RUN cd ${SRC_DIR} \
     && rm -rf ${SRC_DIR}/mongodb-*
 
 # -----------------------------------------------------------------------------
+
+# Install PHP amqp extensions
+# -----------------------------------------------------------------------------
+RUN cd ${SRC_DIR} \
+    && wget -q -O amqp-1.9.3.tgz http://pecl.php.net/get/amqp-1.9.3.tgz \
+    && tar zxvf amqp-1.9.3.tgz \
+    && cd amqp-1.9.3 \
+    && ${PHP_INSTALL_DIR}/bin/phpize \
+    && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config --with-librabbitmq-dir=${HOME}/rabbitmq-c 1>/dev/null \
+    && make clean \
+    && make 1>/dev/null \
+    && make install \
+    && rm -rf ${SRC_DIR}/amqp*
+
+# -----------------------------------------------------------------------------
+
 # Install PHP redis extensions
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \

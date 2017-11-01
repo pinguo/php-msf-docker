@@ -349,9 +349,9 @@ RUN cd $SRC_DIR \
 # Install PHP mongodb extensions
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O mongodb-1.2.9.tgz https://pecl.php.net/get/mongodb-1.2.9.tgz \
-    && tar zxf mongodb-1.2.9.tgz \
-    && cd mongodb-1.2.9 \
+    && wget -q -O mongodb-1.3.2.tgz https://pecl.php.net/get/mongodb-1.3.2.tgz \
+    && tar zxf mongodb-1.3.2.tgz \
+    && cd mongodb-1.3.2 \
     && ${PHP_INSTALL_DIR}/bin/phpize \
     && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config 1>/dev/null \
     && make clean \

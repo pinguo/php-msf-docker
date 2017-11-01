@@ -308,19 +308,6 @@ RUN cd ${SRC_DIR} \
 
 # -----------------------------------------------------------------------------
 
-# Install PHP amqp extensions
-# -----------------------------------------------------------------------------
-RUN cd ${SRC_DIR} \
-    && wget -q -O amqp-1.9.3.tgz http://pecl.php.net/get/amqp-1.9.3.tgz \
-    && tar zxvf amqp-1.9.3.tgz \
-    && cd amqp-1.9.3 \
-    && ${PHP_INSTALL_DIR}/bin/phpize \
-    && ./configure --with-php-config=$PHP_INSTALL_DIR/bin/php-config --with-librabbitmq-dir=${HOME}/rabbitmq-c 1>/dev/null \
-    && make clean \
-    && make 1>/dev/null \
-    && make install \
-    && rm -rf ${SRC_DIR}/amqp*
-
 # -----------------------------------------------------------------------------
 
 # Install PHP redis extensions

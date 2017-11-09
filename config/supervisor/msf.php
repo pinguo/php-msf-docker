@@ -10,6 +10,7 @@ $wwwPath = '/home/worker/data/www/';
 
 // 服务列表
 $servers = [];
+$msfServers = [];
 
 // 遍历服务部署路径,检查已部署服务是否支持MSF框架
 if ($dh = opendir($wwwPath)) {
@@ -17,10 +18,17 @@ if ($dh = opendir($wwwPath)) {
         if (strpos($file, '_rollback') !== false) {
             continue;
         }
+        if (!empty($servers) && !in_array($file, $servers)) {
+            continue;
+        }
 
         if (is_dir($wwwPath . $file) && file_exists($wwwPath . $file . '/server.php')){
             chmod($wwwPath . $file . '/server.php', 0755);
-            $servers[$file] = $wwwPath . $file . '/server.php';
+            $name = $file;
+            if ($name != 'msf-' && strpos($name, 'msf-') === 0) {
+                $name = substr($name, count('msf-'));
+            }
+            $msfServers[$name] = $wwwPath . $file . '/server.php';
         }
     }
     closedir($dh);
@@ -28,9 +36,9 @@ if ($dh = opendir($wwwPath)) {
 
 // supervisor配置模板
 $conf = <<<eot
-[program:msf]
+[program:msf-___NAME___]
 command=___BIN___ 
-process_name=___NAME___
+process_name=msf-___NAME___
 numprocs=1
 directory=/home/worker/php/
 umask=022
@@ -50,9 +58,9 @@ stderr_logfile=/home/worker/data/msf-___NAME___/error.log
 eot;
 
 // 重写配置
-if (!empty($servers)) {
+if (!empty($msfServers)) {
     $newConfContent = '';
-    foreach ($servers as $name => $bin) {
+    foreach ($msfServers as $name => $bin) {
         // 创建日志目录
         if (!is_dir('/home/worker/data/msf-' . $name)) {
             mkdir('/home/worker/data/msf-' . $name, 0777, true);

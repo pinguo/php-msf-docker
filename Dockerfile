@@ -137,7 +137,7 @@ RUN cd ${SRC_DIR} \
     && ln -s LuaJIT-2.0.5 luajit \
     && export LUAJIT_LIB=${HOME}/luajit/lib \
     && export LUAJIT_INC=${HOME}/luajit/include/luajit-2.0 \
-    && cd nginx-${nginx_version} \
+    && cd ${SRC_DIR}/nginx-${nginx_version} \
     && ./configure --prefix=$NGINX_INSTALL_DIR --with-http_stub_status_module --with-http_ssl_module \
         --add-module=../nginx-http-concat/nginx-http-concat-master --add-module=../nginx-logid/nginx-logid-master \
         --with-ld-opt="-Wl,-rpath,${HOME}/luajit/lib" --add-module=../ngx_devel_kit-0.3.0 --add-module=../lua-nginx-module-0.10.11 1>/dev/null \

@@ -26,7 +26,7 @@ if ($dh = opendir($wwwPath)) {
             chmod($wwwPath . $file . '/server.php', 0755);
             $name = $file;
             if ($name != 'msf-' && strpos($name, 'msf-') === 0) {
-                $name = substr($name, count('msf-'));
+                $name = substr($name, strlen('msf-'));
             }
             $msfServers[$name] = $wwwPath . $file . '/server.php';
         }

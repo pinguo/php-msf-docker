@@ -131,7 +131,7 @@ RUN cd ${SRC_DIR} \
     && tar zxf lua-nginx-module-0.10.11.tar.gz \
     && tar zxf LuaJIT-2.0.5.tar.gz \
     && cd LuaJIT-2.0.5 \
-    && make PREFIX=${HOME}/LuaJIT-2.0.5 \
+    && make PREFIX=${HOME}/LuaJIT-2.0.5 1>/dev/null \
     && make install PREFIX=${HOME}/LuaJIT-2.0.5 \
     && cd ${HOME} \
     && ln -s LuaJIT-2.0.5 luajit \

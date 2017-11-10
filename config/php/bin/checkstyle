@@ -23,17 +23,21 @@ class CheckStyle
     public function run() {
         $this->getCommandLineValues();
 
-        if ($this->values['app'] !== null) {
-            $configPath = $this->values['app'] . '/' . $this->values['target'] . '/config/check.php';
+        $configPath = $this->values['config'];
+        if ($this->values['server'] !== null) {
+            !$configPath && $configPath = $this->values['server'] . '/config/check.php';
             if (is_readable($configPath)) {
                 $config = require($configPath);
                 if (!empty($config['exclude'])) {
                     $exclude = array();
                     foreach ($config['exclude'] as $v) {
-                        if (strlen($v) > 4 && substr($v, -4) == '.php') {
-                            $exclude[] = $v;
+                        if (empty($v)) {
+                            continue;
+                        }
+                        if ($v[0] === '/') {
+                            $exclude[] = rtrim($v, '/');
                         } else {
-                            $exclude[] = $this->values['app'] . '/' . $this->values['target'] . '/'  . trim(trim($v), '/');
+                            $exclude[] = $this->values['server'] . '/' . $this->values['target'] . '/'  . trim(trim($v), '/');
                         }
                     }
                     !empty($this->values['exclude']) && $exclude = array_merge($exclude, explode(',', $this->values['exclude']));
@@ -43,7 +47,7 @@ class CheckStyle
                 if ($this->values['outdir'] === null && !empty($config['outdir'])) {
                     $this->values['outdir'] = $config['outdir'];
                 }
-                $this->values['files'][] = realpath($this->values['app'] . '/' . $this->values['target']);
+                $this->values['files'][] = realpath($this->values['server'] . '/' . $this->values['target']);
             }
         }
         if (!$this->values['fix']) {
@@ -156,10 +160,11 @@ class CheckStyle
         // The default values for config settings.
         $defaults['fix'] = false;
         $defaults['files'] = array();
-        $defaults['app'] = null;
+        $defaults['server'] = null;
         $defaults['exclude'] = null;
         $defaults['outdir'] = null;
-        $defaults['target'] = 'protected';
+        $defaults['target'] = 'app';
+        $defaults['config'] = null;
         
         return $defaults;
     }
@@ -202,20 +207,28 @@ class CheckStyle
             $this->printUsage();
             exit(0);
         }
-        if (substr($arg, 0, 4) === 'app=') {
-            $app = rtrim(trim(substr($arg, 4)), '/');
-            if (file_exists($app) === false) {
-                echo 'ERROR: The app "'.$app.'" does not exist.'.PHP_EOL.PHP_EOL;
+        if (substr($arg, 0, 7) === 'server=') {
+            $server = rtrim(trim(substr($arg, 7)), '/');
+            if (file_exists($server) === false) {
+                echo 'ERROR: The server "'.$server.'" does not exist.'.PHP_EOL.PHP_EOL;
                 $this->printUsage();
                 exit(2);
             }
-            $this->values['app'] = rtrim(exec('readlink -f ' . $app), '/');
+            $this->values['server'] = rtrim(exec('readlink -f ' . $server), '/');
         } elseif (substr($arg, 0, 8) === 'exclude=') {
             $this->values['exclude'] = trim(substr($arg, 8));
         } elseif (substr($arg, 0, 7) === 'outdir=') {
             $this->values['outdir'] = trim(substr($arg, 7));
         } elseif (substr($arg, 0, 7) === 'target=') {
             $this->values['target'] = trim(trim(substr($arg, 7)), '/');
+        } elseif (substr($arg, 0, 7) === 'config=') {
+            $config = rtrim(trim(substr($arg, 7)), '/');
+            if (file_exists($config) === false) {
+                echo 'ERROR: The config "'.$config.'" does not exist.'.PHP_EOL.PHP_EOL;
+                $this->printUsage();
+                exit(2);
+            }
+            $this->values['config'] = rtrim(exec('readlink -f ' . $config), '/');
         }
     }
     
@@ -255,12 +268,12 @@ class CheckStyle
      */
     public function printUsage()
     {
-        echo 'Usage: checkstyle [-f] [--app=<app>] [--target=<target>] [--exclude=<patterns>] [--outdir=<outdir>] <file>' . PHP_EOL;
+        echo 'Usage: checkstyle [-f] [--server=<server>] [--target=<target>] [--config=<config>] [--exclude=<patterns>] [--outdir=<outdir>] <file>' . PHP_EOL;
         echo '        -f            Enable auto fix' . PHP_EOL;
-        echo '        <file>         One or more files and/or directories to check' . PHP_EOL;
-        echo '        <app>         The name of the app, <app>/<target> will be appended in file' . PHP_EOL;
-        echo '                      <app>/<target>/config/check.php will be in use' . PHP_EOL;
-        echo '        <target>      Defaults to "protected"' . PHP_EOL;
+        echo '        <file>        One or more files and/or directories to check' . PHP_EOL;
+        echo '        <server>      The name of the server, <server>/<target> will be appended in file' . PHP_EOL;
+        echo '        <target>      Defaults to "app"' . PHP_EOL;
+        echo '        <config>      Defaults to <server>/config/check.php' . PHP_EOL;
         echo '        <patterns>    A comma separated list of patterns to ignore files and directories' . PHP_EOL;
         echo '        <outdir>      Report directory' . PHP_EOL;
     }

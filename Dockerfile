@@ -164,7 +164,7 @@ RUN cd ${SRC_DIR} \
 ENV mongodb_version 3.4.9
 ENV MONGODB_INSTALL_DIR ${HOME}/mongodb/${mongodb_version}
 RUN cd ${SRC_DIR} \
-    && wget -O mongodb-linux-x86_64-rhel62-${mongodb_version}.tgz https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.4.9.tgz \
+    && wget -q -O mongodb-linux-x86_64-rhel62-${mongodb_version}.tgz https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.4.9.tgz \
     && tar xzf mongodb-linux-x86_64-rhel62-${mongodb_version}.tgz \
     && mkdir -p ${MONGODB_INSTALL_DIR} \
     && mv mongodb-linux-x86_64-rhel62-${mongodb_version}/* ${MONGODB_INSTALL_DIR} \
@@ -174,7 +174,7 @@ RUN cd ${SRC_DIR} \
 ## Install Mysql(client)
 ## -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -O mysql57-community-release-el6-11.noarch.rpm https://dev.mysql.com/get/mysql57-community-release-el6-11.noarch.rpm \
+    && wget -q -O mysql57-community-release-el6-11.noarch.rpm https://dev.mysql.com/get/mysql57-community-release-el6-11.noarch.rpm \
     && rpm -ivh --nodigest --nosignature mysql57-community-release-el6-11.noarch.rpm \
     && yum -v -y install mysql-community-client ncurses-devel \
     && rm -f mysql57-community-release-el6-11.noarch.rpm
@@ -193,7 +193,7 @@ RUN cd ${SRC_DIR} \
     && rm -rf ${SRC_DIR}/rabbitmq-c*
 
 RUN cd ${SRC_DIR} \
-    && wget -O otp_src_20.0.tar.gz http://erlang.org/download/otp_src_20.0.tar.gz \
+    && wget -q -O otp_src_20.0.tar.gz http://erlang.org/download/otp_src_20.0.tar.gz \
     && tar zxf otp_src_20.0.tar.gz \
     && cd otp_src_20.0 \
     && ./configure --enable-hipe --with-ssl \
@@ -206,7 +206,7 @@ RUN cd ${SRC_DIR} \
 
 ENV RABBIT_INSTALL_DIR $HOME/rabbitmq
 RUN cd ${SRC_DIR} \
-    && wget -O rabbitmq-server-generic-unix-3.6.12.tar.xz http://www.rabbitmq.com/releases/rabbitmq-server/v3.6.12/rabbitmq-server-generic-unix-3.6.12.tar.xz \
+    && wget -q -O rabbitmq-server-generic-unix-3.6.12.tar.xz http://www.rabbitmq.com/releases/rabbitmq-server/v3.6.12/rabbitmq-server-generic-unix-3.6.12.tar.xz \
     && tar xf rabbitmq-server-generic-unix-3.6.12.tar.xz \
     && mv rabbitmq_server-3.6.12 ${RABBIT_INSTALL_DIR} \
     && rm -rf ${SRC_DIR}/rabbitmq*
@@ -264,7 +264,8 @@ RUN cd ${SRC_DIR} \
     && echo "/usr/local/lib64" >> /etc/ld.so.conf.d/local.conf \
     && echo "/usr/local/src/libmcrypt-2.5.8/lib/.libs" >> /etc/ld.so.conf.d/local.conf \
     && chmod gu+x /etc/ld.so.conf.d/local.conf \
-    && ldconfig -v
+    && ldconfig -v \
+    && rm -rf ${SRC_DIR}/libmcrypt*
 
 # -----------------------------------------------------------------------------
 # Install re2c for PHP

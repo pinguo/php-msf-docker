@@ -16,7 +16,7 @@ RUN rpm --import /etc/pki/rpm-gpg/RPM* \
     && curl --silent --location https://raw.githubusercontent.com/nodesource/distributions/master/rpm/setup_6.x | bash - \
     && yum -y update \
     && yum groupinstall -y "Development tools" \
-    && yum install -y gcc-c++ zlib-devel bzip2-devel openssl \
+    && yum -y install gcc-c++ zlib-devel bzip2-devel openssl \
     openssl-devel ncurses-devel sqlite-devel wget \
     && rm -rf /var/cache/{yum,ldconfig}/* \
     && rm -rf /etc/ld.so.cache \
@@ -146,10 +146,13 @@ RUN cd ${SRC_DIR} \
 ## Install Mysql(client)
 ## -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O mysql57-community-release-el6-11.noarch.rpm https://dev.mysql.com/get/mysql57-community-release-el6-11.noarch.rpm \
-    && rpm -ivh --nodigest --nosignature mysql57-community-release-el6-11.noarch.rpm \
-    && yum -v -y install mysql-community-client ncurses-devel \
-    && rm -f mysql57-community-release-el6-11.noarch.rpm
+    && wget -q -O mysql57-community-release-el7-11.noarch.rpm https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm \
+    && rpm -ivh --nodigest --nosignature mysql57-community-release-el7-11.noarch.rpm \
+    && yum -y install mysql-community-client ncurses-devel \
+    && rm -rf /var/cache/{yum,ldconfig}/* \
+    && rm -rf /etc/ld.so.cache \
+    && rm -rf ${SRC_DIR}/mysql57-community-release-el7-11.noarch.rpm \
+    && yum clean all
 
 # -----------------------------------------------------------------------------
 # Install Rabbitmq
@@ -257,7 +260,6 @@ RUN cd ${SRC_DIR} \
 ENV phpversion 7.1.9
 ENV PHP_INSTALL_DIR ${HOME}/php
 RUN cd ${SRC_DIR} \
-    && ls -l \
     && wget -q -O php-${phpversion}.tar.gz http://cn2.php.net/distributions/php-${phpversion}.tar.gz \
     && tar xzf php-${phpversion}.tar.gz \
     && cd php-${phpversion} \

@@ -516,7 +516,7 @@ RUN cd ${SRC_DIR} \
 # -----------------------------------------------------------------------------
 # Install Apache ab
 # -----------------------------------------------------------------------------
-RUN cd ${HOME} \
+RUN cd ${SRC_DIR} \
     && yum -y remove httpd \
     && mkdir httpd \
     && cd httpd \
@@ -524,7 +524,7 @@ RUN cd ${HOME} \
     && rpm2cpio httpd-tools* | cpio -idmv \
     && mkdir -p /home/worker/bin \
     && mv ./usr/bin/ab /home/worker/bin \
-    && cd ${HOME} && rm -rf /home/worker/httpd
+    && rm -rf ${SRC_DIR}/httpd
 
 # -----------------------------------------------------------------------------
 # Update Git

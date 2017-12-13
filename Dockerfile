@@ -1,4 +1,4 @@
-FROM centos:centos6.9
+FROM centos:centos7
 MAINTAINER pinguoops <pinguo-ops@camera360.com>
 
 # -----------------------------------------------------------------------------
@@ -21,37 +21,6 @@ RUN rpm --import /etc/pki/rpm-gpg/RPM* \
     && rm -rf /var/cache/{yum,ldconfig}/* \
     && rm -rf /etc/ld.so.cache \
     && yum clean all
-
-# -----------------------------------------------------------------------------
-# Update Python to 2.7.x
-# -----------------------------------------------------------------------------
-RUN cd ${SRC_DIR} \
-    && wget -q -O Python-2.7.13.tgz http://mirrors.sohu.com/python/2.7.13/Python-2.7.13.tgz \
-    && tar zxf Python-2.7.13.tgz \
-    && cd Python-2.7.13 \
-    && ./configure \
-    && make \
-    && make install \
-    && mv /usr/bin/python /usr/bin/python.old \
-    && rm -f /usr/bin/python-config \
-    && ln -s /usr/local/bin/python /usr/bin/python \
-    && ln -s /usr/local/bin/python-config /usr/bin/python-config \
-    && ln -s /usr/local/include/python2.7/ /usr/include/python2.7 \
-    && wget https://bootstrap.pypa.io/ez_setup.py -O - | python \
-    && easy_install pip \
-    && sed -in-place '1s%.*%#!/usr/bin/python2.6%' /usr/bin/yum \
-    && cp -r /usr/lib/python2.6/site-packages/yum /usr/local/lib/python2.7/site-packages/ \
-    && cp -r /usr/lib/python2.6/site-packages/rpmUtils /usr/local/lib/python2.7/site-packages/ \
-    && cp -r /usr/lib/python2.6/site-packages/iniparse /usr/local/lib/python2.7/site-packages/ \
-    && cp -r /usr/lib/python2.6/site-packages/urlgrabber /usr/local/lib/python2.7/site-packages/ \
-    && cp -r /usr/lib64/python2.6/site-packages/rpm /usr/local/lib/python2.7/site-packages/ \
-    && cp -r /usr/lib64/python2.6/site-packages/curl /usr/local/lib/python2.7/site-packages/ \
-    && cp -p /usr/lib64/python2.6/site-packages/pycurl.so /usr/local/lib/python2.7/site-packages/ \
-    && cp -p /usr/lib64/python2.6/site-packages/_sqlitecache.so /usr/local/lib/python2.7/site-packages/ \
-    && cp -p /usr/lib64/python2.6/site-packages/sqlitecachec.py /usr/local/lib/python2.7/site-packages/ \
-    && cp -p /usr/lib64/python2.6/site-packages/sqlitecachec.pyc /usr/local/lib/python2.7/site-packages/ \
-    && cp -p /usr/lib64/python2.6/site-packages/sqlitecachec.pyo /usr/local/lib/python2.7/site-packages/ \
-    && rm -rf ${SRC_DIR}/Python*
 
 # -----------------------------------------------------------------------------
 # Devel libraries for delelopment tools like php & nginx ...
@@ -79,9 +48,12 @@ RUN yum -y install \
     && yum clean all
 
 # -----------------------------------------------------------------------------
-# Install supervisor and distribute ...
+# Install pip supervisor and distribute ...
 # -----------------------------------------------------------------------------
-RUN pip install supervisor distribute \
+RUN cd ${SRC_DIR} \
+    && wget https://bootstrap.pypa.io/ez_setup.py -O - | python \
+    && easy_install pip \ 
+    && pip install supervisor distribute \
     && rm -rf /tmp/*
 
 # -----------------------------------------------------------------------------
@@ -270,7 +242,7 @@ RUN cd ${SRC_DIR} \
 # -----------------------------------------------------------------------------
 # Install re2c for PHP
 # -----------------------------------------------------------------------------
-run cd $SRC_DIR \
+RUN cd ${SRC_DIR} \
     && wget -q -O re2c-1.0.tar.gz https://excellmedia.dl.sourceforge.net/project/re2c/old/re2c-1.0.tar.gz \
     && tar xzf re2c-1.0.tar.gz \
     && cd re2c-1.0 \

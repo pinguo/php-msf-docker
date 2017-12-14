@@ -322,15 +322,15 @@ RUN cd $SRC_DIR \
     && tar xzf yaml-0.1.7.tar.gz \
     && cd yaml-0.1.7 \
     && ./configure --prefix=/usr/local \
-    && make >/dev/null \
+    && make \
     && make install \
     && cd $SRC_DIR \
-    && wget -q -O yaml-2.0.2.tgz https://pecl.php.net/get/yaml-2.0.2.tgz \
+    && wget -q -O yaml-2.0.2.tgz http://pecl.php.net/get/yaml-2.0.2.tgz \
     && tar xzf yaml-2.0.2.tgz \
     && cd yaml-2.0.2 \
     && $PHP_INSTALL_DIR/bin/phpize \
     && ./configure --with-yaml=/usr/local --with-php-config=$PHP_INSTALL_DIR/bin/php-config \
-    && make >/dev/null \
+    && make \
     && make install \
     && rm -rf $SRC_DIR/yaml-*
 
@@ -338,7 +338,7 @@ RUN cd $SRC_DIR \
 # Install PHP mongodb extensions
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O mongodb-1.3.2.tgz https://pecl.php.net/get/mongodb-1.3.2.tgz \
+    && wget -q -O mongodb-1.3.2.tgz http://pecl.php.net/get/mongodb-1.3.2.tgz \
     && tar zxf mongodb-1.3.2.tgz \
     && cd mongodb-1.3.2 \
     && ${PHP_INSTALL_DIR}/bin/phpize \
@@ -366,7 +366,7 @@ RUN cd ${SRC_DIR} \
 # Install PHP redis extensions
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O redis-3.1.3.tgz https://pecl.php.net/get/redis-3.1.3.tgz \
+    && wget -q -O redis-3.1.3.tgz http://pecl.php.net/get/redis-3.1.3.tgz \
     && tar zxf redis-3.1.3.tgz \
     && cd redis-3.1.3 \
     && ${PHP_INSTALL_DIR}/bin/phpize \
@@ -380,7 +380,7 @@ RUN cd ${SRC_DIR} \
 # Install PHP imagick extensions
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O imagick-3.4.3.tgz https://pecl.php.net/get/imagick-3.4.3.tgz \
+    && wget -q -O imagick-3.4.3.tgz http://pecl.php.net/get/imagick-3.4.3.tgz \
     && tar zxf imagick-3.4.3.tgz \
     && cd imagick-3.4.3 \
     && ${PHP_INSTALL_DIR}/bin/phpize \
@@ -395,7 +395,7 @@ RUN cd ${SRC_DIR} \
 # Install PHP xdebug extensions
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O xdebug-2.5.5.tgz https://pecl.php.net/get/xdebug-2.5.5.tgz \
+    && wget -q -O xdebug-2.5.5.tgz http://pecl.php.net/get/xdebug-2.5.5.tgz \
     && tar zxf xdebug-2.5.5.tgz \
     && cd xdebug-2.5.5 \
     && ${PHP_INSTALL_DIR}/bin/phpize \
@@ -409,7 +409,7 @@ RUN cd ${SRC_DIR} \
 # Install PHP igbinary extensions
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O igbinary-2.0.1.tgz https://pecl.php.net/get/igbinary-2.0.1.tgz \
+    && wget -q -O igbinary-2.0.1.tgz http://pecl.php.net/get/igbinary-2.0.1.tgz \
     && tar zxf igbinary-2.0.1.tgz \
     && cd igbinary-2.0.1 \
     && ${PHP_INSTALL_DIR}/bin/phpize \
@@ -423,7 +423,7 @@ RUN cd ${SRC_DIR} \
 # Install PHP memcached extensions
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O memcached-3.0.3.tgz https://pecl.php.net/get/memcached-3.0.3.tgz \
+    && wget -q -O memcached-3.0.3.tgz http://pecl.php.net/get/memcached-3.0.3.tgz \
     && tar xzf memcached-3.0.3.tgz \
     && cd memcached-3.0.3 \
     && ${PHP_INSTALL_DIR}/bin/phpize \
@@ -437,7 +437,7 @@ RUN cd ${SRC_DIR} \
 # Install PHP yac extensions
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O yac-2.0.2.tgz https://pecl.php.net/get/yac-2.0.2.tgz \
+    && wget -q -O yac-2.0.2.tgz http://pecl.php.net/get/yac-2.0.2.tgz \
     && tar zxf yac-2.0.2.tgz\
     && cd yac-2.0.2 \
     && ${PHP_INSTALL_DIR}/bin/phpize \
@@ -465,7 +465,7 @@ RUN cd ${SRC_DIR} \
 # Install PHP inotify extensions
 # -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
-    && wget -q -O inotify-2.0.0.tgz https://pecl.php.net/get/inotify-2.0.0.tgz \
+    && wget -q -O inotify-2.0.0.tgz http://pecl.php.net/get/inotify-2.0.0.tgz \
     && tar zxf inotify-2.0.0.tgz \
     && cd inotify-2.0.0 \
     && ${PHP_INSTALL_DIR}/bin/phpize \

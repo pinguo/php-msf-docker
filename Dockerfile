@@ -573,7 +573,5 @@ RUN useradd -M -u 1000 worker \
 RUN rm -rf ${SRC_DIR}/*
 RUN rm -rf /tmp/*
 
+EXPOSE 80 443
 ENTRYPOINT ["/run.sh"]
-
-EXPOSE 22 80 443
-CMD ["/usr/sbin/sshd", "-D"]

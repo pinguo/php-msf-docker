@@ -28,9 +28,6 @@ chmod u+s /home/worker/nginx/sbin/nginx
 chmod 700 /home/worker/.ssh
 chmod 600 /home/worker/.ssh/authorized_keys
 
-echo '/etc/init.d/sshd start'
-/etc/init.d/sshd start
-
 if [ -f /home/worker/bin/init.sh ]; then
     echo '/home/worker/bin/init.sh'
     chmod a+x /home/worker/bin/init.sh

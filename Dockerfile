@@ -7,7 +7,6 @@ MAINTAINER pinguoops <pinguo-ops@camera360.com>
 ENV HOME /home/worker
 ENV SRC_DIR $HOME/src
 RUN mkdir -p ${SRC_DIR}
-#ADD src ${SRC_DIR}
 
 # -----------------------------------------------------------------------------
 # Install Development tools
@@ -26,7 +25,7 @@ RUN rpm --import /etc/pki/rpm-gpg/RPM* \
 # Devel libraries for delelopment tools like php & nginx ...
 # -----------------------------------------------------------------------------
 RUN yum -y install \
-    tar gzip bzip2 unzip file perl-devel perl-ExtUtils-Embed \
+    man man-pages tar gzip bzip2 unzip file perl-devel perl-ExtUtils-Embed \
     pcre openssh-server openssh sudo \
     screen vim git telnet expat \
     lemon net-snmp net-snmp-devel \
@@ -167,6 +166,9 @@ RUN cd ${SRC_DIR} \
     && make install \
     && rm -rf ${SRC_DIR}/rabbitmq-c*
 
+# -----------------------------------------------------------------------------
+# Install otp
+# -----------------------------------------------------------------------------
 RUN cd ${SRC_DIR} \
     && wget -q -O otp_src_20.0.tar.gz http://erlang.org/download/otp_src_20.0.tar.gz \
     && tar zxf otp_src_20.0.tar.gz \
@@ -179,6 +181,9 @@ RUN cd ${SRC_DIR} \
     && yum clean all \
     && rm -rf ${SRC_DIR}/otp*
 
+# -----------------------------------------------------------------------------
+# Install Rabbitmq server
+# -----------------------------------------------------------------------------
 ENV RABBIT_INSTALL_DIR $HOME/rabbitmq
 RUN cd ${SRC_DIR} \
     && wget -q -O rabbitmq-server-generic-unix-3.6.12.tar.xz http://www.rabbitmq.com/releases/rabbitmq-server/v3.6.12/rabbitmq-server-generic-unix-3.6.12.tar.xz \
@@ -539,6 +544,18 @@ RUN cd ${SRC_DIR} \
     && make \
     && make install \
     && rm -rf $SRC_DIR/git-2*
+
+# -----------------------------------------------------------------------------
+# Install google proto as well to have PHP code generation and PHP extension protobuf
+# -----------------------------------------------------------------------------
+RUN cd ${SRC_DIR} \
+    && wget -q -O protoc-3.5.0-linux-x86_64.zip https://github.com/google/protobuf/releases/download/v3.5.0/protoc-3.5.0-linux-x86_64.zip \
+    && unzip protoc-3.5.0-linux-x86_64.zip -d protoc-3.5.0-linux-x86_64 \
+    && cd protoc-3.5.0-linux-x86_64 \
+    && cp -rf bin/protoc ${HOME}/bin \
+    && cp -rf include/google /usr/local/include/ \
+    && ${PHP_INSTALL_DIR}/bin/pecl install protobuf-3.5.0.1 \
+    && rm -rf ${SRC_DIR}/protoc*
 
 # -----------------------------------------------------------------------------
 # Install Node and apidoc and nodemon

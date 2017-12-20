@@ -15,31 +15,17 @@ RUN rpm --import /etc/pki/rpm-gpg/RPM* \
     && curl --silent --location https://raw.githubusercontent.com/nodesource/distributions/master/rpm/setup_6.x | bash - \
     && yum -y update \
     && yum groupinstall -y "Development tools" \
-    && yum -y install gcc-c++ zlib-devel bzip2-devel openssl \
-    openssl-devel ncurses-devel sqlite-devel wget \
-    && rm -rf /var/cache/{yum,ldconfig}/* \
-    && rm -rf /etc/ld.so.cache \
-    && yum clean all
-
-# -----------------------------------------------------------------------------
-# Devel libraries for delelopment tools like php & nginx ...
-# -----------------------------------------------------------------------------
-RUN yum -y install \
-    man man-pages tar gzip bzip2 unzip file perl-devel perl-ExtUtils-Embed \
-    pcre openssh-server openssh sudo \
-    screen vim git telnet expat \
-    lemon net-snmp net-snmp-devel \
-    ca-certificates perl-CPAN m4 \
-    gd libjpeg libpng zlib libevent net-snmp net-snmp-devel \
-    net-snmp-libs freetype libtool-tldl libxml2 unixODBC \
-    libxslt libmcrypt freetds \
-    gd-devel libjpeg-devel libpng-devel zlib-devel \
-    freetype-devel libtool-ltdl libtool-ltdl-devel \
-    libxml2-devel zlib-devel bzip2-devel gettext-devel \
-    curl-devel gettext-devel libevent-devel \
-    libxslt-devel expat-devel unixODBC-devel \
-    openssl-devel libmcrypt-devel freetds-devel \
-    pcre-devel openldap openldap-devel libc-client-devel \
+    && yum -y install gcc-c++ ncurses-devel sqlite-devel zlib zlib-devel \
+    wget man man-pages tar gzip unzip file sudo \
+    bzip2 bzip2-devel perl-devel perl-ExtUtils-Embed perl-CPAN \
+    pcre pcre-devel openssh-server openssh openssl-devel \
+    screen vim git telnet expat expat-devel ca-certificates m4 \
+    lemon net-snmp net-snmp-devel net-snmp-libs net-tools \
+    gd gd-devel libjpeg libjpeg-devel libpng libpng-devel libevent libevent-devel  \
+    freetype freetype-devel libxml2 libxml2-devel unixODBC unixODBC-devel \
+    libxslt libxslt-devel libmcrypt libmcrypt-devel freetds freetds-devel \
+    libtool-ltdl libtool-ltdl-devel gettext-devel curl-devel \
+    openldap openldap-devel libc-client-devel \
     jemalloc jemalloc-devel inotify-tools nodejs apr-util yum-utils tree cronie crontabs \
     && ln -s /usr/lib64/libc-client.so /usr/lib/libc-client.so \
     && sed -i '/session    required   pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/crond \
@@ -148,7 +134,7 @@ RUN cd ${SRC_DIR} \
 RUN cd ${SRC_DIR} \
     && wget -q -O mysql57-community-release-el7-11.noarch.rpm https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm \
     && rpm -ivh --nodigest --nosignature mysql57-community-release-el7-11.noarch.rpm \
-    && yum -y install mysql-community-client ncurses-devel \
+    && yum -y install mysql-community-client \
     && rm -rf /var/cache/{yum,ldconfig}/* \
     && rm -rf /etc/ld.so.cache \
     && rm -rf ${SRC_DIR}/mysql57-community-release-el7-11.noarch.rpm \

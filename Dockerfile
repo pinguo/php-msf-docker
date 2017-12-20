@@ -40,8 +40,9 @@ RUN yum -y install \
     libxslt-devel expat-devel unixODBC-devel \
     openssl-devel libmcrypt-devel freetds-devel \
     pcre-devel openldap openldap-devel libc-client-devel \
-    jemalloc jemalloc-devel inotify-tools nodejs apr-util yum-utils tree \
+    jemalloc jemalloc-devel inotify-tools nodejs apr-util yum-utils tree cronie crontabs \
     && ln -s /usr/lib64/libc-client.so /usr/lib/libc-client.so \
+    && sed -i '/session    required   pam_loginuid.so/c\#session    required   pam_loginuid.so' /etc/pam.d/crond \
     && rm -rf /var/cache/{yum,ldconfig}/* \
     && rm -rf /etc/ld.so.cache \
     && yum clean all

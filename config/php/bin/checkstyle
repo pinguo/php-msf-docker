@@ -47,8 +47,8 @@ class CheckStyle
                 if ($this->values['outdir'] === null && !empty($config['outdir'])) {
                     $this->values['outdir'] = $config['outdir'];
                 }
-                $this->values['files'][] = realpath($this->values['server'] . '/' . $this->values['target']);
             }
+            $this->values['files'][] = realpath($this->values['server'] . '/' . $this->values['target']);
         }
         if (!$this->values['fix']) {
             $cmd = 'phpcs --standard=PGSR --extensions=php --encoding=utf-8 --report-width=120 -s --report-full --report-summary';
